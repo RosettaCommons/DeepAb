@@ -177,7 +177,7 @@ def _cli():
                       enc_hid_dim=args.enc_hid_dim,
                       dec_hid_dim=args.dec_hid_dim)
 
-    model = PairedSeqLSTM(**properties, device=device)
+    model = PairedSeqLSTM(**properties)
     model.apply(init_weights)
 
     criterion = nn.CrossEntropyLoss()
