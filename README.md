@@ -19,5 +19,26 @@ Download pretrained model weights
 wget link.to/come
 ```
 
+## Common workflows
+
+Additional options for all scripts are available by running with `--help`.
+
+### Structure prediction
+Generate an antibody structure prediction from an Fv sequence with five decoys:
+```
+python predict.py data/sample_files/4h0h.fasta --decoys 5 --renumber
+```
+Generate Rosetta constraint files for an Fv sequence:
+```
+python predict.py data/sample_files/4h0h.fasta --decoys 0 --keep_constraints
+```
+
+### Attention annotation
+Annotate an Fv structure with H3 attention:
+```
+python attention.py data/sample_files/4h0h.truncated.pdb --renumber --cdr_loop h3
+```
+_Note_: CDR loop residues are determined using Chothia definitions, so the input structure should be numbered beforehand or renumbered by passing `--renumber`
+
 ## References
 [1] JA Ruffolo, J Sulam, and JJ Gray. "Antibody structure prediction using interpretable deep learning." _bioRxiv_ (2021).

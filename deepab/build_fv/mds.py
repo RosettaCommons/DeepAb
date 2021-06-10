@@ -5,6 +5,8 @@ from sklearn.manifold import MDS
 from deepab.util.masking import MASK_VALUE
 from deepab.util.util import _aa_1_3_dict, get_heavy_seq_len, load_full_seq
 
+ARBITRARILY_LARGE_VALUE = 999
+
 
 def place_fourth_atom(a_coord: torch.Tensor, b_coord: torch.Tensor,
                       c_coord: torch.Tensor, length: torch.Tensor,
@@ -98,10 +100,11 @@ def fix_chirality(coords: torch.Tensor) -> torch.Tensor:
         return coords
 
 
-def fix_bond_lengths(dist_mat: torch.Tensor,
-                     bond_lengths: torch.Tensor,
-                     delim: int = None,
-                     delim_value: float = MASK_VALUE) -> torch.Tensor:
+def fix_bond_lengths(
+        dist_mat: torch.Tensor,
+        bond_lengths: torch.Tensor,
+        delim: int = None,
+        delim_value: float = ARBITRARILY_LARGE_VALUE) -> torch.Tensor:
     """
     Replace one-offset diagonal entries with ideal bond lengths
     """
@@ -123,7 +126,7 @@ def fill_dist_mat(dist_mat: torch.Tensor) -> torch.Tensor:
     """
     Fill sparse distance matrix using Floyd-Warshall shortest path algorithm
     """
-    dist_mat[dist_mat != dist_mat] = 999
+    dist_mat[dist_mat != dist_mat] = ARBITRARILY_LARGE_VALUE
     for m in range(dist_mat.shape[0]):
         o = dist_mat[m]
         dist_mat = torch.min(torch.stack(
@@ -219,8 +222,8 @@ def get_full_dist_mat(dist: torch.Tensor,
     # Create sparse distance matrix, with potentially missing values
     sparse_dist_mat = raw_dist_mat.clone()
     if mask is not None:
-        # Set mased positions to arbitrarily large value for replacement by F-W algorithm
-        sparse_dist_mat[mask == 0] = MASK_VALUE
+        # Set masked positions to arbitrarily large value for replacement by F-W algorithm
+        sparse_dist_mat[mask == 0] = ARBITRARILY_LARGE_VALUE
 
     # Fix bond lengths in sparse distance matrix
     sparse_dist_mat = fix_bond_lengths(sparse_dist_mat,
@@ -233,7 +236,7 @@ def get_full_dist_mat(dist: torch.Tensor,
         # Store computed chain break distance
         delim_dist = full_dist_mat[delim * 3 + 2, (delim + 1) * 3].item()
     else:
-        delim_dist = MASK_VALUE
+        delim_dist = ARBITRARILY_LARGE_VALUE
 
     # Fix bond lengths
     full_dist_mat = fix_bond_lengths(full_dist_mat,

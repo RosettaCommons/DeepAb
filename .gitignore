@@ -28,3 +28,4 @@ scripts/
 temp/
 .DS_Store
 venv/
+pred_*/
