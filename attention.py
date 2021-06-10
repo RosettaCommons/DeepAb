@@ -92,7 +92,7 @@ def _cli():
         exit("Provided CDR loop not recognized: {}\nMust be one of {}".format(
             cdr_loop, cdr_names))
 
-    branch_names = ["ca", "cn", "no", "omega", "theta", "phi"]
+    branch_names = ["ca", "cb", "no", "omega", "theta", "phi"]
     if not attention_branch in branch_names:
         exit("Provided attention branch not recognized: {}\nMust be one of {}".
              format(attention_branch, branch_names))
