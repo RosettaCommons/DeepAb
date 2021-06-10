@@ -34,12 +34,12 @@ def _get_args():
         """)
     parser = argparse.ArgumentParser(description=desc)
 
-    # parser.add_argument("pdb_file",
-    #                     type=str,
-    #                     help="
-    #     PDB file containing structure to be annotated.
-    #     Heavy and light chain sequences should be truncated at Chothia positions 112 and 109.
-    # ")
+    parser.add_argument("pdb_file",
+                        type=str,
+                        help="""
+        PDB file containing structure to be annotated.
+        Heavy and light chain sequences should be truncated at Chothia positions 112 and 109.
+    """)
 
     parser.add_argument("--out_file",
                         type=str,
@@ -74,8 +74,7 @@ def _get_args():
 def _cli():
     args = _get_args()
 
-    # pdb_file = args.pdb_file
-    pdb_file = "data/sample_files/4h0h.truncated.pdb"
+    pdb_file = args.pdb_file
     out_file = args.out_file
     model_file = args.model_file
     renumber = args.renumber
