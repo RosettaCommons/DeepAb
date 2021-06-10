@@ -32,7 +32,7 @@ import deepab
 from deepab.util.pdb import get_pdb_chain_seq
 from deepab.util.util import RawTextArgumentDefaultsHelpFormatter
 
-# Relative paths from deeph3/data
+# Relative paths from deepab/data
 _DEFAULT_SUMMARY_FILE_PATH = 'info/sabdab_summary.tsv'
 _DEFAULT_ANTIBODY_DATABASE_PATH = 'antibody_database/'
 _TESTSET_FILENAME_ = 'TestSetList.txt'
@@ -394,11 +394,13 @@ def download_sabdab_summary_file(summary_file_path=_DEFAULT_SUMMARY_FILE_PATH,
         id='downloads').find('a').get('href')
     print('Downloading sabdab summary to {} from: {} ...'.format(
         summary_file_path, summary_file_url))
+
+    os.makedirs(os.path.split(summary_file_path[0]), exist_ok=True)
     download_file(summary_file_url, summary_file_path)
 
 
 def download_test_dataset(test_set_path='test_set/'):
-    # Change the working directory to the deeph3/data directory
+    # Change the working directory to the deepab/data directory
     original_dir = os.getcwd()
     project_path = os.path.abspath(os.path.join(deepab.__file__, "../.."))
     data_dir = Path(os.path.join(project_path, "data"))
@@ -432,7 +434,7 @@ def download_train_dataset(
         **kwargs):
     """
     Downloads a training set from SAbDab, avoids downloading PDB files in the
-    deeph3/data/TestSetList.txt file.
+    deepab/data/TestSetList.txt file.
 
     :param summary_file_path: Path to the summary file produced by SAbDab
     :type summary_file_path: str
@@ -441,7 +443,7 @@ def download_train_dataset(
     :param max_workers: Max number of workers in the thread pool while downloading.
     :type max_workers: int
     """
-    # Change the working directory to the deeph3/data directory
+    # Change the working directory to the deepab/data directory
     original_dir = os.getcwd()
     project_path = os.path.abspath(os.path.join(deepab.__file__, "../.."))
     data_dir = Path(os.path.join(project_path, "data"))

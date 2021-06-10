@@ -6,7 +6,7 @@ import torch
 
 from deepab.constraints import Constraint, ConstraintType, Residue, ResiduePair, constraint_type_generator_dict
 from deepab.constraints.custom_filters import no_max_distance_filter, local_interaction_filter
-from deepab.constraints.rosetta_constraint_generators import neg_log_prob_to_energy
+from deepab.constraints.rosetta_constraint_generators import logit_to_energy
 from deepab.models.AbResNet import AbResNet
 from deepab.models.ModelEnsemble import ModelEnsemble
 from deepab.util.get_bins import get_dist_bins, get_dihedral_bins, get_planar_bins, get_bin_values
@@ -146,7 +146,7 @@ def get_filtered_constraint_file(residue_pairs: List[ResiduePair],
                                  interchain: bool = False,
                                  constraint_types: List[ConstraintType] = None,
                                  constraint_filters: List = None,
-                                 prob_to_energy=neg_log_prob_to_energy):
+                                 prob_to_energy=logit_to_energy):
     if not os.path.exists(constraint_dir):
         os.mkdir(constraint_dir)
 
