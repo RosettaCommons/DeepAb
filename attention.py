@@ -1,27 +1,26 @@
 import os
 import argparse
 import tempfile
-from datetime import datetime
-from glob import glob
-from tqdm.contrib.concurrent import process_map
 import torch
-import numpy as np
-import pyrosetta
 
 import deepab
 from deepab.models.AbResNet import load_model
 from deepab.analysis.attention_analysis import *
 from deepab.util.pdb import cdr_indices, pdb2fasta, renumber_pdb, write_pdb_bfactor
 
-
-def prog_print(text):
-    print("*" * 50)
-    print(text)
-    print("*" * 50)
+cdr_names = ["h1", "h2", "h3", "l1", "l2", "l3"]
+branch_names = ["ca", "cb", "no", "omega", "theta", "phi"]
 
 
-def annotate_structure(model, pdb_file, out_file):
-    print()
+def annotate_structure(model, fasta_file, pdb_file, attn_range,
+                       attention_branch):
+    hw_attn_mats = get_HW_attn_for_fasta(model, fasta_file)
+    branch_attn = hw_attn_mats[branch_names.index(attention_branch)]
+    cdr_attn = get_mean_range_attn(branch_attn, attn_range)[0]
+
+    write_pdb_bfactor(in_pdb_file=pdb_file,
+                      out_pdb_file=pdb_file,
+                      bfactor=cdr_attn * 100)
 
 
 def _get_args():
@@ -87,12 +86,10 @@ def _cli():
 
     model = load_model(model_file, eval_mode=True, device=device)
 
-    cdr_names = ["h1", "h2", "h3", "l1", "l2", "l3"]
     if not cdr_loop in cdr_names:
         exit("Provided CDR loop not recognized: {}\nMust be one of {}".format(
             cdr_loop, cdr_names))
 
-    branch_names = ["ca", "cb", "no", "omega", "theta", "phi"]
     if not attention_branch in branch_names:
         exit("Provided attention branch not recognized: {}\nMust be one of {}".
              format(attention_branch, branch_names))
@@ -108,15 +105,8 @@ def _cli():
         fasta_content = pdb2fasta(pdb_file)
         f.write(fasta_content)
 
-    hw_attn_mats = get_HW_attn_for_fasta(model, temp_fasta)
-    branch_attn = hw_attn_mats[branch_names.index(attention_branch)]
-
     cdr_i = cdr_indices(pdb_file, cdr_loop)
-    cdr_attn = get_mean_range_attn(branch_attn, cdr_i)[0]
-
-    write_pdb_bfactor(in_pdb_file=out_file,
-                      out_pdb_file=out_file,
-                      bfactor=cdr_attn * 100)
+    annotate_structure(model, temp_fasta, pdb_file, cdr_i, attention_branch)
 
 
 if __name__ == '__main__':
