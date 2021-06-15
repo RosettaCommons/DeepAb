@@ -26,15 +26,22 @@ def bin_matrix(in_tensor, are_logits=True, method='max'):
         raise ValueError('method must be in {\'avg\',\'max\'}')
 
 
-def get_inputs_from_fasta(fasta_file):
-    seq = one_hot_seq(load_full_seq(fasta_file)).float()
+def get_inputs_from_full_seq(full_seq, h_len):
+    seq = one_hot_seq(full_seq).float()
 
     # Add chain delimiter
     seq = nn.functional.pad(seq, (0, 1, 0, 0))
-    h_len = get_heavy_seq_len(fasta_file)
     seq[h_len - 1, seq.shape[1] - 1] = 1
 
     seq = seq.unsqueeze(0).transpose(1, 2)
+
+    return seq
+
+
+def get_inputs_from_fasta(fasta_file):
+    full_seq = load_full_seq(fasta_file)
+    h_len = get_heavy_seq_len(fasta_file)
+    seq = get_inputs_from_full_seq(full_seq, h_len)
 
     return seq
 

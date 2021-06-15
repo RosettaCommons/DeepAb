@@ -40,5 +40,11 @@ python annotate_attention.py data/sample_files/4h0h.truncated.pdb --renumber --c
 ```
 _Note_: CDR loop residues are determined using Chothia definitions, so the input structure should be numbered beforehand or renumbered by passing `--renumber`
 
+### Design scoring
+Calculate ΔCCE for list of designed sequences:
+```
+python score_design.py data/sample_files/wt.fasta data/sample_files/h_mut_seqs.fasta data/sample_files/l_mut_seqs.fasta design_out.csv
+```
+
 ## References
 [1] JA Ruffolo, J Sulam, and JJ Gray. "Antibody structure prediction using interpretable deep learning." _bioRxiv_ (2021).

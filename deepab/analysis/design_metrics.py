@@ -45,6 +45,7 @@ def get_fasta_cce(model: Union[ModelEnsemble, AbResNet],
                   device: str = None):
     inputs = get_inputs_from_fasta(fasta_file)
     if type(device) != type(None):
+        model = model.to(device)
         inputs = inputs.to(device)
 
     cce = get_cce_for_inputs(model, inputs)
