@@ -36,7 +36,7 @@ python predict.py data/sample_files/4h0h.fasta --decoys 0 --keep_constraints
 ### Attention annotation
 Annotate an Fv structure with H3 attention:
 ```
-python attention.py data/sample_files/4h0h.truncated.pdb --renumber --cdr_loop h3
+python annotate_attention.py data/sample_files/4h0h.truncated.pdb --renumber --cdr_loop h3
 ```
 _Note_: CDR loop residues are determined using Chothia definitions, so the input structure should be numbered beforehand or renumbered by passing `--renumber`
 
