@@ -16,7 +16,8 @@ pip install -r requirements
 ```
 Download pretrained model weights
 ```
-wget link.to/come
+wget https://data.graylab.jhu.edu/ensemble_abresnet_v1.tar.gz
+tar -xf ensemble_abresnet_v1.tar.gz -C trained_models/
 ```
 
 ## Common workflows
