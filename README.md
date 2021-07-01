@@ -12,6 +12,9 @@ Install project dependencies
 ```
 pip install -r requirements
 ```
+
+_Note_: PyRosetta should be installed following the instructions [here](http://pyrosetta.org/dow).
+
 Download pretrained model weights
 ```
 wget https://data.graylab.jhu.edu/ensemble_abresnet_v1.tar.gz
