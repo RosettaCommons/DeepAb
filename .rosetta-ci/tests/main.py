@@ -29,15 +29,27 @@ def run_pipeline_test(repository_root, working_dir, platform, config):
     # else:
     #     if os.path.isfile( os.getenv("HOME") + '/.condarc.template' ) execute('Creating .condarc from template...', 'cp ~/.condarc.template ~/.condarc')
 
-    conda = setup_conda_virtual_environment(working_dir, platform, config)
+    # conda = setup_conda_virtual_environment(working_dir, platform, config)
+    # execute('Installing PyRosetta package...', f'{conda.activate} && conda install --channel file://{config["mounts"]["release_root"]}/PyRosetta4/conda/release --yes pyrosetta')
+    # execute('Installing Conda packages...', f'{conda.activate_base} && conda env update --prefix {conda.root} -f {repository_root}/casp14-baker-linux-gpu.yml')
 
-    execute('Installing PyRosetta package...', f'{conda.activate} && conda install --channel file://{config["mounts"]["release_root"]}/PyRosetta4/conda/release --yes pyrosetta')
 
-    execute('Installing Conda packages...', f'{conda.activate_base} && conda env update --prefix {conda.root} -f {repository_root}/casp14-baker-linux-gpu.yml')
+    python_environment = local_python_install(platform, config)
+    with open(f'{repository_root}/requirements.txt') as f: packages = "'" + "' '".join( f.read().split() ) + "'"
+    ve = setup_python_virtual_environment(f'{working_dir}/.ve', python_environment, packages)
 
-    prefix = calculate_unique_prefix_path(platform, config) + '/trRosetta2'
+    wheel_dir = f'{config["mounts"]["release_root"]}/PyRosetta4/archive/release/PyRosetta4.MinSizeRel.python'
+    wheel_dir += str(platform["python"]).replace('.', '') + '.linux.wheel'
 
-    execute('Running pipeline script...', f'cd {repository_root} && ./run-pipeline.py --prefix {prefix} --working-dir {working_dir} example/T1078.fa')
+    with open(f'{wheel_dir}/.htaccess') as f:
+        pyrosetta_wheel_path = wheel_dir + '/' + f.read().rpartition('$1')[2]
+
+    print(f'wheel: {pyrosetta_wheel_path}')
+    execute('Installing PyRosetta...', f'{ve.activate} && pip install {pyrosetta_wheel_path}')
+
+    prefix = calculate_unique_prefix_path(platform, config) + '/deep_ab'
+
+    execute('Running pipeline script...', f'cd {repository_root} && ./run-pipeline.py --prefix {prefix} --working-dir {working_dir} some-input-structure')
 
     return {_StateKey_ : _S_passed_,  _ResultsKey_ : {},  _LogKey_ : f'' }
 
@@ -45,6 +57,6 @@ def run_pipeline_test(repository_root, working_dir, platform, config):
 
 
 def run(test, repository_root, working_dir, platform, config, hpc_driver=None, verbose=False, debug=False):
-    if   test == 'pipeline': return run_pipeline_test(repository_root, working_dir, platform, config)
+    if test == '' or test == 'pipeline': return run_pipeline_test(repository_root, working_dir, platform, config)
 
     else: raise BenchmarkError(f'Dummy test script does not support run with test={test!r}!')

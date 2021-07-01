@@ -126,7 +126,7 @@ def run_python_test(repository_root, working_dir, platform, config):
 
         ves = [
             setup_persistent_python_virtual_environment(python_environment, packages='colr dice xdice pdp11games'),
-            setup_python_virtual_environment(working_dir, python_environment, packages='colr dice xdice pdp11games'),
+            setup_python_virtual_environment(f'{working_dir}/.ve', python_environment, packages='colr dice xdice pdp11games'),
         ]
 
         for ve in ves:
