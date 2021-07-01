@@ -18,7 +18,7 @@ _Note_: PyRosetta should be installed following the instructions [here](http://p
 Download pretrained model weights
 ```
 wget https://data.graylab.jhu.edu/ensemble_abresnet_v1.tar.gz
-tar -xf ensemble_abresnet_v1.tar.gz -C trained_models/
+tar -xf ensemble_abresnet_v1.tar.gz
 ```
 
 ## Common workflows
