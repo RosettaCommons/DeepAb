@@ -1,9 +1,7 @@
 # _DeepAb_
-This is the official repository containing the models and code for the [DeepAb antibody structure prediction method](https://www.biorxiv.org/content/10.1101/2021.05.27.445982v1.full).
+This is the official repository for [DeepAb](https://www.biorxiv.org/content/10.1101/2021.05.27.445982v1.full): Antibody structure prediction using interpretable deep learning.
 
 ## Setup
-
-_Note_: This project is tested with Python 3.7.9
 
 _Optional_: Create and activate a python virtual environment
 ```
@@ -24,6 +22,9 @@ tar -xf ensemble_abresnet_v1.tar.gz -C trained_models/
 
 Additional options for all scripts are available by running with `--help`.
 
+_Note_: This project is tested with Python 3.7.9
+
+
 ### Structure prediction
 Generate an antibody structure prediction from an Fv sequence with five decoys:
 ```
@@ -34,6 +35,11 @@ Generate Rosetta constraint files for an Fv sequence:
 python predict.py data/sample_files/4h0h.fasta --decoys 0 --keep_constraints
 ```
 
+**Expected output**
+
+After the script completes, the final prediction will be saved as `pred.deepab.pdb`.  The numbered decoy structures will be stored in the `decoys/` directory.  If `--keep_constraints` is specified, Rosetta constraint files and histograms will be stored in the `constraints/` directory.
+
+
 ### Attention annotation
 Annotate an Fv structure with H3 attention:
 ```
@@ -41,11 +47,19 @@ python annotate_attention.py data/sample_files/4h0h.truncated.pdb --renumber --c
 ```
 _Note_: CDR loop residues are determined using Chothia definitions, so the input structure should be numbered beforehand or renumbered by passing `--renumber`
 
+**Expected output**
+
+After the script completes, the annotated PDB will overwrite the input file (unless `--out_file` is specificed).  Annotations will be stored as b-factor information, and can be visualized in [PyMOL](https://pymol.org/2/) or similar software.
+
 ### Design scoring
 Calculate ΔCCE for list of designed sequences:
 ```
 python score_design.py data/sample_files/wt.fasta data/sample_files/h_mut_seqs.fasta data/sample_files/l_mut_seqs.fasta design_out.csv
 ```
+
+**Expected output**
+
+After the script completes, the designs and scores will be written to a CSV file with each row containing the design ID, heavy chain sequence, light chain sequence, and  ΔCCE value.
 
 ## References
 [1] JA Ruffolo, J Sulam, and JJ Gray. "Antibody structure prediction using interpretable deep learning." _bioRxiv_ (2021).
