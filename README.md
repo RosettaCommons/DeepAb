@@ -1,5 +1,5 @@
 # _DeepAb_
-Official repository for [DeepAb](https://www.biorxiv.org/content/10.1101/2021.05.27.445982v1.full): Antibody structure prediction using interpretable deep learning.  The code, data, and weights for this work are are made available under the [Rosetta-DL license](LICENSE.md).
+Official repository for [DeepAb](https://www.biorxiv.org/content/10.1101/2021.05.27.445982v1.full): Antibody structure prediction using interpretable deep learning.  The code, data, and weights for this work are made available under the [Rosetta-DL license](LICENSE.md).
 
 ## Setup
 
