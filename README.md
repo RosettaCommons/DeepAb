@@ -1,5 +1,5 @@
-# _DeepAb_: Work in progress
-This repository contains the models and code used for the DeepAb antibody structure prediction method.
+# _DeepAb_
+This is the official repository containing the models and code for the [DeepAb antibody structure prediction method](https://www.biorxiv.org/content/10.1101/2021.05.27.445982v1.full).
 
 ## Setup
 
