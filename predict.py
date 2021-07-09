@@ -157,11 +157,13 @@ def _cli():
                                    pred_dir,
                                    target=target,
                                    num_decoys=decoys,
-                                   num_procs=num_procs,
-                                   keep_constraints=keep_constraints)
+                                   num_procs=num_procs)
 
         if renumber:
             renumber_pdb(pred_pdb, pred_pdb)
+
+    if not keep_constraints:
+        os.system("rm {}".format(constraint_dir))
 
 
 if __name__ == '__main__':
