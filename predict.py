@@ -163,7 +163,7 @@ def _cli():
             renumber_pdb(pred_pdb, pred_pdb)
 
     if not keep_constraints:
-        os.system("rm {}".format(constraint_dir))
+        os.system("rm -rf {}".format(constraint_dir))
 
 
 if __name__ == '__main__':
