@@ -10,10 +10,10 @@ source venv/bin/activate
 ```
 Install project dependencies
 ```
-pip install -r requirements
+pip install -r requirements.txt
 ```
 
-_Note_: PyRosetta should be installed following the instructions [here](http://pyrosetta.org/dow).
+_Note_: PyRosetta should be installed following the instructions [here](http://pyrosetta.org/downloads).
 
 Download pretrained model weights
 ```

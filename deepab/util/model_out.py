@@ -47,7 +47,7 @@ def get_inputs_from_fasta(fasta_file):
 
 
 def get_logits_from_model(model, fasta_file, device=None):
-    """Gets the probability distribution output of a H3ResNet model"""
+    """Gets the probability distribution output of a AbResNet model"""
     seq = get_inputs_from_fasta(fasta_file)
     if not device == None:
         seq = seq.to(device)
