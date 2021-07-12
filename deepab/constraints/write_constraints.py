@@ -72,11 +72,8 @@ def get_constraint_residue_pairs(model: torch.nn.Module,
             mask_distant_orientations=mask_distant_orientations)
 
     if use_logits:
-        logits = [
-            p.permute(1, 2, 0)
-            for p in get_logits_from_model(model, fasta_file, device=device)
-        ]
-        preds = logits
+        logits = get_logits_from_model(model, fasta_file, device=device)
+        preds = [l.permute(1, 2, 0).cpu() for l in logits]
 
         ca_dist_mat = binned_mat_to_values(
             bin_matrix(preds[0].permute(2, 0, 1), are_logits=use_logits),

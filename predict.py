@@ -153,7 +153,7 @@ def _cli():
     cst_file = os.path.join(constraint_dir, "hb_csm", "constraints.cst")
     if not os.path.exists(cst_file):
         prog_print("Generating constraints")
-        cst_file = get_cst_file(model, fasta_file, constraint_dir)
+        cst_file = get_cst_file(model, fasta_file, constraint_dir, device=device)
 
     if decoys > 0:
         pred_pdb = build_structure(model,
