@@ -17,7 +17,8 @@ from deepab.util.util import get_heavy_seq_len
 def build_initial_fv(fasta_file: str,
                      mds_pdb_file: str,
                      model: AbResNet,
-                     mask_distant_orientations: bool = True) -> None:
+                     mask_distant_orientations: bool = True,
+                     device: str = None) -> None:
     """
     Build initial Fv structure from AbResNet outputs via MDS
     """
@@ -32,7 +33,7 @@ def build_initial_fv(fasta_file: str,
         get_planar_bins(model._num_out_bins - masked_bin_num, rad=True)
     ]
 
-    probs = get_probs_from_model(model, fasta_file)
+    probs = get_probs_from_model(model, fasta_file, device=device)
     pred_bin_mats = [bin_matrix(p, are_logits=False) for p in probs]
     pred_value_mats = [
         binned_mat_to_values(pred_bin_mats[i], bins[i])

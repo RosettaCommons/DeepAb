@@ -31,13 +31,14 @@ def build_structure(model,
                     out_dir,
                     target="pred",
                     num_decoys=5,
-                    num_procs=1):
+                    num_procs=1,
+                    device=None):
     decoy_dir = os.path.join(out_dir, "decoys")
     os.makedirs(decoy_dir, exist_ok=True)
 
     prog_print("Creating MDS structure")
     mds_pdb_file = os.path.join(decoy_dir, "{}.mds.pdb".format(target))
-    build_initial_fv(fasta_file, mds_pdb_file, model)
+    build_initial_fv(fasta_file, mds_pdb_file, model, device=device)
 
     prog_print("Creating decoys structures")
     decoy_pdb_pattern = os.path.join(decoy_dir,
@@ -114,6 +115,10 @@ def _get_args():
         action="store_true",
         help=
         "Keep constraint files after final predicted structure is selected.")
+    parser.add_argument("--use_gpu",
+                        default=False,
+                        action="store_true",
+                        help="Run model prediction on GPU.")
 
     return parser.parse_args()
 
@@ -131,7 +136,7 @@ def _cli():
     keep_constraints = args.keep_constraints
 
     device_type = 'cuda' if torch.cuda.is_available(
-    ) and args.try_gpu else 'cpu'
+    ) and args.use_gpu else 'cpu'
     device = torch.device(device_type)
 
     model_files = list(glob(os.path.join(model_dir, "*.pt")))
@@ -157,7 +162,8 @@ def _cli():
                                    pred_dir,
                                    target=target,
                                    num_decoys=decoys,
-                                   num_procs=num_procs)
+                                   num_procs=num_procs,
+                                   device=device)
 
         if renumber:
             renumber_pdb(pred_pdb, pred_pdb)
