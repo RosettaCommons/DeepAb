@@ -257,7 +257,7 @@ def load_model(model_file,
         lstm_mean = torch.tensor(lstm_checkpoint_dict['scaler_mean']).float()
         lstm_scale = torch.tensor(lstm_checkpoint_dict['scaler_scale']).float()
 
-        if type(device) is not type(None):
+        if device is not None:
             lstm_model = lstm_model.to(device)
             lstm_mean = lstm_mean.to(device)
             lstm_scale = lstm_scale.to(device)
@@ -289,6 +289,9 @@ def load_model(model_file,
                          dilation_cycle=dilation_cycle)
 
     model.load_state_dict(model_state, strict=strict)
+
+    if device is not None:
+        model = model.to(device)
 
     if eval_mode:
         model.eval()
