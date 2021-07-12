@@ -55,8 +55,10 @@ def build_initial_fv(fasta_file: str,
     pose.dump_pdb(mds_pdb_file)
 
 
-def get_cst_file(model: torch.nn.Module, fasta_file: str,
-                 constraint_dir: str) -> str:
+def get_cst_file(model: torch.nn.Module,
+                 fasta_file: str,
+                 constraint_dir: str,
+                 device: str = None) -> str:
     """
     Generate standard constraint files for Fv builder
     """
@@ -65,7 +67,8 @@ def get_cst_file(model: torch.nn.Module, fasta_file: str,
     residue_pairs = get_constraint_residue_pairs(model,
                                                  fasta_file,
                                                  heavy_seq_len,
-                                                 use_logits=True)
+                                                 use_logits=True,
+                                                 device=device)
 
     all_cst_file = get_filtered_constraint_file(
         residue_pairs=residue_pairs,

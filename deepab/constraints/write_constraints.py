@@ -59,7 +59,8 @@ def get_constraint_residue_pairs(model: torch.nn.Module,
                                  heavy_seq_len: int,
                                  constraint_bin_value_dict: dict = None,
                                  mask_distant_orientations: bool = True,
-                                 use_logits: bool = True):
+                                 use_logits: bool = True,
+                                 device: str = None):
     seq = load_full_seq(fasta_file)
 
     model_type = type(
@@ -73,7 +74,7 @@ def get_constraint_residue_pairs(model: torch.nn.Module,
     if use_logits:
         logits = [
             p.permute(1, 2, 0)
-            for p in get_logits_from_model(model, fasta_file)
+            for p in get_logits_from_model(model, fasta_file, device=device)
         ]
         preds = logits
 
