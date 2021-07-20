@@ -20,6 +20,7 @@ Download pretrained model weights
 wget https://data.graylab.jhu.edu/ensemble_abresnet_v1.tar.gz
 tar -xf ensemble_abresnet_v1.tar.gz
 ```
+After unzipping, pre-trained models might need to be moved such that they have paths `trained_models/ensemble_abresnet/rs*.pt`
 
 ## Common workflows
 
