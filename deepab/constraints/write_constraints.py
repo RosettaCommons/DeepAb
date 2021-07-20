@@ -56,7 +56,6 @@ def get_constraint_bin_value_dict(num_out_bins: int,
 
 def get_constraint_residue_pairs(model: torch.nn.Module,
                                  fasta_file: str,
-                                 heavy_seq_len: int,
                                  constraint_bin_value_dict: dict = None,
                                  mask_distant_orientations: bool = True,
                                  use_logits: bool = True,

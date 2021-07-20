@@ -18,6 +18,7 @@ def build_initial_fv(fasta_file: str,
                      mds_pdb_file: str,
                      model: AbResNet,
                      mask_distant_orientations: bool = True,
+                     single_chain: bool = False,
                      device: str = None) -> None:
     """
     Build initial Fv structure from AbResNet outputs via MDS
@@ -48,7 +49,8 @@ def build_initial_fv(fasta_file: str,
                  pred_value_mats[3],
                  pred_value_mats[4],
                  pred_value_mats[5],
-                 mask=dist_mask)
+                 mask=dist_mask,
+                 single_chain=single_chain)
 
     pose = pyrosetta.pose_from_pdb(mds_pdb_file)
     disulfidize(pose, pred_value_mats[1])
@@ -66,7 +68,6 @@ def get_cst_file(model: torch.nn.Module,
     heavy_seq_len = get_heavy_seq_len(fasta_file)
     residue_pairs = get_constraint_residue_pairs(model,
                                                  fasta_file,
-                                                 heavy_seq_len,
                                                  use_logits=True,
                                                  device=device)
 
