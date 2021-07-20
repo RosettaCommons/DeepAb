@@ -65,7 +65,6 @@ def get_cst_file(model: torch.nn.Module,
     Generate standard constraint files for Fv builder
     """
 
-    heavy_seq_len = get_heavy_seq_len(fasta_file)
     residue_pairs = get_constraint_residue_pairs(model,
                                                  fasta_file,
                                                  use_logits=True,
