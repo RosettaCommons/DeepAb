@@ -20,6 +20,7 @@ Download pretrained model weights
 wget https://data.graylab.jhu.edu/ensemble_abresnet_v1.tar.gz
 tar -xf ensemble_abresnet_v1.tar.gz
 ```
+After unzipping, pre-trained models might need to be moved such that they have paths `trained_models/ensemble_abresnet/rs*.pt`
 
 ## Common workflows
 
@@ -37,6 +38,11 @@ Generate Rosetta constraint files for an Fv sequence:
 ```
 python predict.py data/sample_files/4h0h.fasta --decoys 0 --keep_constraints
 ```
+Generate a structure for a single heavy or light chain:
+```
+python predict.py data/sample_files/4h0h.fasta --decoys 5 --single_chain
+```
+_Note_: The fasta file should contain a single entry labeled "H" (even if the sequence is a light chain).
 
 **Expected output**
 

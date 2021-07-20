@@ -340,19 +340,21 @@ def build_fv_mds(fasta_file: str,
                  omega: torch.Tensor,
                  theta: torch.Tensor,
                  phi: torch.Tensor,
-                 mask: torch.Tensor = None) -> None:
+                 mask: torch.Tensor = None,
+                 single_chain: bool = False) -> None:
     """
     Generate atom coords from dist, omega, theta, phi tensors and write to PDB file
     """
 
     heavy_len = get_heavy_seq_len(fasta_file)
+    delim = heavy_len - 1 if not single_chain else None
     seq = load_full_seq(fasta_file)
 
     mds_coords, ca_dist_mat = generate_mds_coords(dist,
                                                   omega,
                                                   theta,
                                                   phi,
-                                                  delim=(heavy_len - 1),
+                                                  delim=delim,
                                                   mask=mask)
 
     save_PDB(out_pdb, mds_coords, ca_dist_mat, seq, delim=(heavy_len - 1))

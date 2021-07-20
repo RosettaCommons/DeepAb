@@ -32,13 +32,18 @@ def build_structure(model,
                     target="pred",
                     num_decoys=5,
                     num_procs=1,
+                    single_chain=False,
                     device=None):
     decoy_dir = os.path.join(out_dir, "decoys")
     os.makedirs(decoy_dir, exist_ok=True)
 
     prog_print("Creating MDS structure")
     mds_pdb_file = os.path.join(decoy_dir, "{}.mds.pdb".format(target))
-    build_initial_fv(fasta_file, mds_pdb_file, model, device=device)
+    build_initial_fv(fasta_file,
+                     mds_pdb_file,
+                     model,
+                     single_chain=single_chain,
+                     device=device)
 
     prog_print("Creating decoys structures")
     decoy_pdb_pattern = os.path.join(decoy_dir,
@@ -115,6 +120,10 @@ def _get_args():
         action="store_true",
         help=
         "Keep constraint files after final predicted structure is selected.")
+    parser.add_argument("--single_chain",
+                        default=False,
+                        action="store_true",
+                        help="Predict for fasta with only one chain")
     parser.add_argument("--use_gpu",
                         default=False,
                         action="store_true",
@@ -134,6 +143,7 @@ def _cli():
     num_procs = args.num_procs
     renumber = args.renumber
     keep_constraints = args.keep_constraints
+    single_chain = args.single_chain
 
     device_type = 'cuda' if torch.cuda.is_available(
     ) and args.use_gpu else 'cpu'
@@ -153,7 +163,10 @@ def _cli():
     cst_file = os.path.join(constraint_dir, "hb_csm", "constraints.cst")
     if not os.path.exists(cst_file):
         prog_print("Generating constraints")
-        cst_file = get_cst_file(model, fasta_file, constraint_dir, device=device)
+        cst_file = get_cst_file(model,
+                                fasta_file,
+                                constraint_dir,
+                                device=device)
 
     if decoys > 0:
         pred_pdb = build_structure(model,
@@ -163,6 +176,7 @@ def _cli():
                                    target=target,
                                    num_decoys=decoys,
                                    num_procs=num_procs,
+                                   single_chain=single_chain,
                                    device=device)
 
         if renumber:
