@@ -1,5 +1,5 @@
 import random
-from typing import Tuple
+from typing import Union
 from os.path import isfile
 import torch
 import torch.nn as nn
@@ -21,7 +21,7 @@ class Encoder(nn.Module):
         self.fc1 = nn.Linear(enc_hid_dim * 2, dec_hid_dim)
         self.fc2 = nn.Linear(enc_hid_dim * 2, dec_hid_dim)
 
-    def forward(self, src: torch.Tensor) -> Tuple[torch.Tensor]:
+    def forward(self, src: torch.Tensor):
         outputs, (hidden, cell) = self.rnn(src.float())
         hidden = torch.tanh(
             self.fc1(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1)))
@@ -43,13 +43,12 @@ class Decoder(nn.Module):
         self.out = nn.Linear(dec_hid_dim + seq_dim, seq_dim)
 
     def forward(self, input: torch.Tensor, decoder_hidden: torch.Tensor,
-                decoder_cell: torch.Tensor,
-                encoder_hidden: torch.Tensor) -> Tuple[torch.Tensor]:
+                decoder_cell: torch.Tensor, encoder_hidden: torch.Tensor):
 
         input = input.unsqueeze(0).float()
         encoder_hidden = encoder_hidden.unsqueeze(0).float()
 
-        if type(decoder_hidden) != type(None):
+        if decoder_hidden is not None:
             output, (decoder_hidden, decoder_cell) = self.rnn(
                 torch.cat((input, encoder_hidden), dim=2),
                 (decoder_hidden, decoder_cell))
@@ -78,15 +77,15 @@ class PairedSeqLSTM(nn.Module):
     def forward(self,
                 src: torch.Tensor,
                 trg: torch.Tensor,
-                teacher_forcing_ratio: float = 0.5) -> torch.Tensor:
+                teacher_forcing_ratio: float = 0.5):
 
-        device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
-        device = torch.device(device_type)
+        # device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
+        # device = torch.device(device_type)
 
         batch_size = src.shape[1]
         max_len = src.shape[0]
         seq_dim = src.shape[2]
-        outputs = torch.zeros(max_len, batch_size, seq_dim).to(device)
+        outputs = torch.zeros(max_len, batch_size, seq_dim)  #.to(device)
 
         encoder_outputs, (encoder_hidden, _) = self.encoder(src)
 
@@ -95,12 +94,12 @@ class PairedSeqLSTM(nn.Module):
         for t in range(1, max_len):
             output, (hidden, cell) = self.decoder(output, hidden, cell,
                                                   encoder_hidden)
-            outputs[t] = output
-            teacher_force = random.random() < teacher_forcing_ratio
-            top1 = F.one_hot(output.argmax(-1), num_classes=output.shape[1])
-            output = (trg[t] if teacher_force else top1)
+        #     outputs[t] = output
+        #     teacher_force = random.random() < teacher_forcing_ratio
+        #     top1 = F.one_hot(output.argmax(-1), num_classes=output.shape[1])
+        #     output = (trg[t] if teacher_force else top1)
 
-        return outputs
+        # return outputs
 
 
 def load_model(model_file, eval_mode=True):
@@ -123,3 +122,10 @@ def load_model(model_file, eval_mode=True):
         model.eval()
 
     return model
+
+
+x = torch.randn((230, 1, 23))
+model = load_model("trained_models/pairedseqlstm_scaler.p.e5", eval_mode=True)
+sm = torch.jit.script(model, (x, x))
+
+print()

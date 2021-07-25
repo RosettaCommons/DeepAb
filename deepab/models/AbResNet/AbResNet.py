@@ -297,3 +297,9 @@ def load_model(model_file,
         model.eval()
 
     return model
+
+
+x = torch.randn((1, 21, 230))
+model = load_model("trained_models/ensemble_abresnet/rs0.pt", eval_mode=True)
+sm = torch.jit.script(model, x)
+print()
