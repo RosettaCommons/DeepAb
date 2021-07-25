@@ -67,52 +67,45 @@ class AbResNet(nn.Module):
                       kernel_size=self.resnet2D.kernel_size,
                       padding=self.resnet2D.kernel_size // 2),
             RCCAModule(in_channels=num_out_bins,
-                       kernel_size=self.resnet2D.kernel_size,
-                       return_attn=True))
+                       kernel_size=self.resnet2D.kernel_size))
         self.out_cb_dist = nn.Sequential(
             nn.Conv2d(out_planes2D,
                       num_out_bins,
                       kernel_size=self.resnet2D.kernel_size,
                       padding=self.resnet2D.kernel_size // 2),
             RCCAModule(in_channels=num_out_bins,
-                       kernel_size=self.resnet2D.kernel_size,
-                       return_attn=True))
+                       kernel_size=self.resnet2D.kernel_size))
         self.out_no_dist = nn.Sequential(
             nn.Conv2d(out_planes2D,
                       num_out_bins,
                       kernel_size=self.resnet2D.kernel_size,
                       padding=self.resnet2D.kernel_size // 2),
             RCCAModule(in_channels=num_out_bins,
-                       kernel_size=self.resnet2D.kernel_size,
-                       return_attn=True))
+                       kernel_size=self.resnet2D.kernel_size))
         self.out_omega = nn.Sequential(
             nn.Conv2d(out_planes2D,
                       num_out_bins,
                       kernel_size=self.resnet2D.kernel_size,
                       padding=self.resnet2D.kernel_size // 2),
             RCCAModule(in_channels=num_out_bins,
-                       kernel_size=self.resnet2D.kernel_size,
-                       return_attn=True))
+                       kernel_size=self.resnet2D.kernel_size))
         self.out_theta = nn.Sequential(
             nn.Conv2d(out_planes2D,
                       num_out_bins,
                       kernel_size=self.resnet2D.kernel_size,
                       padding=self.resnet2D.kernel_size // 2),
             RCCAModule(in_channels=num_out_bins,
-                       kernel_size=self.resnet2D.kernel_size,
-                       return_attn=True))
+                       kernel_size=self.resnet2D.kernel_size))
         self.out_phi = nn.Sequential(
             nn.Conv2d(out_planes2D,
                       num_out_bins,
                       kernel_size=self.resnet2D.kernel_size,
                       padding=self.resnet2D.kernel_size // 2),
             RCCAModule(in_channels=num_out_bins,
-                       kernel_size=self.resnet2D.kernel_size,
-                       return_attn=True))
+                       kernel_size=self.resnet2D.kernel_size))
 
     def get_lstm_input(self, x):
-        device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
-        device = torch.device(device_type)
+        device = x.device
 
         seq_start, seq_end, seq_delim = torch.tensor(
             [20]).byte().to(device), torch.tensor(
@@ -189,7 +182,7 @@ class AbResNet(nn.Module):
         out = torch.cat([out, lstm_enc], dim=1)
 
         out = self.seq2pairwise(out)
-        out = checkpoint(self.resnet2D, out)
+        out = self.resnet2D(out)
         out = self.out_dropout(out)
 
         out_ca_dist = self.out_ca_dist(out)[0]
@@ -214,7 +207,7 @@ class AbResNet(nn.Module):
         out = torch.cat([out, lstm_enc], dim=1)
 
         out = self.seq2pairwise(out)
-        out = checkpoint(self.resnet2D, out)
+        out = self.resnet2D(out)
         out = self.out_dropout(out)
 
         out_ca_dist = self.out_ca_dist(out)[1]
@@ -299,7 +292,8 @@ def load_model(model_file,
     return model
 
 
-x = torch.randn((1, 21, 230))
-model = load_model("trained_models/ensemble_abresnet/rs0.pt", eval_mode=True)
-sm = torch.jit.script(model, x)
-print()
+if __name__ == '__main__':
+    x = torch.randn((1, 21, 230))
+    model = load_model("trained_models/ensemble_abresnet/rs0.pt", eval_mode=True)
+    sm = torch.jit.script(model, x)
+    print()

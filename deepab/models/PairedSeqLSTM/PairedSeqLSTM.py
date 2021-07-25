@@ -1,5 +1,5 @@
 import random
-from typing import Union
+from typing import Optional, Union
 from os.path import isfile
 import torch
 import torch.nn as nn
@@ -42,16 +42,20 @@ class Decoder(nn.Module):
         self.rnn = nn.LSTM(enc_hid_dim + seq_dim, dec_hid_dim, num_layers=2)
         self.out = nn.Linear(dec_hid_dim + seq_dim, seq_dim)
 
-    def forward(self, input: torch.Tensor, decoder_hidden: torch.Tensor,
-                decoder_cell: torch.Tensor, encoder_hidden: torch.Tensor):
+    def forward(self, input: torch.Tensor,
+                decoder_hidden: Optional[torch.Tensor],
+                decoder_cell: Optional[torch.Tensor],
+                encoder_hidden: torch.Tensor):
 
         input = input.unsqueeze(0).float()
         encoder_hidden = encoder_hidden.unsqueeze(0).float()
 
-        if decoder_hidden is not None:
+        if decoder_hidden is not None and decoder_cell is not None:
+            decoder_hidden_: torch.Tensor = decoder_hidden
+            decoder_cell_: torch.Tensor = decoder_cell
             output, (decoder_hidden, decoder_cell) = self.rnn(
                 torch.cat((input, encoder_hidden), dim=2),
-                (decoder_hidden, decoder_cell))
+                (decoder_hidden_, decoder_cell_))
         else:
             output, (decoder_hidden, decoder_cell) = self.rnn(
                 torch.cat((input, encoder_hidden), dim=2))
@@ -78,28 +82,25 @@ class PairedSeqLSTM(nn.Module):
                 src: torch.Tensor,
                 trg: torch.Tensor,
                 teacher_forcing_ratio: float = 0.5):
-
-        # device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
-        # device = torch.device(device_type)
-
         batch_size = src.shape[1]
         max_len = src.shape[0]
         seq_dim = src.shape[2]
-        outputs = torch.zeros(max_len, batch_size, seq_dim)  #.to(device)
+        outputs = torch.zeros(max_len, batch_size, seq_dim).to(src.device)
 
         encoder_outputs, (encoder_hidden, _) = self.encoder(src)
 
         output = trg[0, :]
-        hidden, cell = None, None
+        hidden: Optional[torch.Tensor] = None
+        cell: Optional[torch.Tensor] = None
         for t in range(1, max_len):
             output, (hidden, cell) = self.decoder(output, hidden, cell,
                                                   encoder_hidden)
-        #     outputs[t] = output
-        #     teacher_force = random.random() < teacher_forcing_ratio
-        #     top1 = F.one_hot(output.argmax(-1), num_classes=output.shape[1])
-        #     output = (trg[t] if teacher_force else top1)
+            outputs[t] = output
+            teacher_force = torch.rand(1).item() < teacher_forcing_ratio
+            top1 = F.one_hot(output.argmax(-1), num_classes=output.shape[1])
+            output = (trg[t] if teacher_force else top1)
 
-        # return outputs
+        return outputs
 
 
 def load_model(model_file, eval_mode=True):
@@ -124,8 +125,6 @@ def load_model(model_file, eval_mode=True):
     return model
 
 
-x = torch.randn((230, 1, 23))
-model = load_model("trained_models/pairedseqlstm_scaler.p.e5", eval_mode=True)
-sm = torch.jit.script(model, (x, x))
-
-print()
+# x = torch.randn((230, 1, 23))
+# model = load_model("trained_models/pairedseqlstm_scaler.p.e5", eval_mode=True)
+# sm = torch.jit.script(model, (x, x))

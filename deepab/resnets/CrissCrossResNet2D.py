@@ -42,13 +42,8 @@ class CrissCrossAttention(nn.Module):
                                     out_channels=in_dim,
                                     kernel_size=1)
         self.softmax = nn.Softmax(dim=3)
-        self.INF = lambda B, H, W: -torch.diag(
-            torch.tensor(float("inf")).to(self.device).repeat(H), 0).unsqueeze(
-                0).repeat(B * W, 1, 1)
-        self.gamma = nn.Parameter(torch.zeros(1))
 
-        device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.device = torch.device(device_type)
+        self.gamma = nn.Parameter(torch.zeros(1))
 
     def forward(self, x):
         m_batchsize, _, height, width = x.size()
@@ -67,10 +62,12 @@ class CrissCrossAttention(nn.Module):
             m_batchsize * width, -1, height)
         proj_value_W = proj_value.permute(0, 2, 1, 3).contiguous().view(
             m_batchsize * height, -1, width)
-        energy_H = (torch.bmm(proj_query_H, proj_key_H) +
-                    self.INF(m_batchsize, height, width)).view(
-                        m_batchsize, width, height,
-                        height).permute(0, 2, 1, 3)
+
+        energy_H_inf = -torch.diag(
+            torch.tensor(float("inf")).to(x.device).repeat(height),
+            0).unsqueeze(0).repeat(m_batchsize * width, 1, 1)
+        energy_H = (torch.bmm(proj_query_H, proj_key_H) + energy_H_inf).view(
+            m_batchsize, width, height, height).permute(0, 2, 1, 3)
         energy_W = torch.bmm(proj_query_W,
                              proj_key_W).view(m_batchsize, height, width,
                                               width)
@@ -100,9 +97,8 @@ class CrissCrossAttention(nn.Module):
 
 
 class RCCAModule(nn.Module):
-    def __init__(self, in_channels, kernel_size=3, return_attn=False):
+    def __init__(self, in_channels, kernel_size=3):
         super(RCCAModule, self).__init__()
-        self.return_attn = return_attn
         inter_channels = in_channels // 4
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels,
@@ -124,11 +120,8 @@ class RCCAModule(nn.Module):
         output = self.conv1(x)
         attns = []
         for _ in range(2):
-            output, attn = checkpoint(self.cca, output)
+            output, attn = self.cca(output)
             attns.append(attn)
         output = self.conv2(output)
 
-        if self.return_attn:
-            return output, attns
-        else:
-            return output
+        return output, attns
