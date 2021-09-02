@@ -18,9 +18,6 @@ class CrissCrossAttention(nn.Module):
                                     out_channels=in_dim,
                                     kernel_size=1)
         self.softmax = nn.Softmax(dim=3)
-        self.INF = lambda B, H, W: -torch.diag(
-            torch.tensor(float("inf")).repeat(H), 0).unsqueeze(0).repeat(
-                B * W, 1, 1)
         self.gamma = nn.Parameter(torch.zeros(1))
 
     def forward(self, x):
