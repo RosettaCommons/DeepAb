@@ -54,42 +54,6 @@ class ResBlock1D(nn.Module):
         return out
 
 
-class PreActResBlock1D(torch.nn.Module):
-    def __init__(self,
-                 in_planes,
-                 planes,
-                 kernel_size=5,
-                 dilation=1,
-                 stride=1,
-                 shortcut=None) -> None:
-        super(PreActResBlock1D, self).__init__()
-
-        padding = ((kernel_size - 1) * dilation) // 2
-
-        self.activation = F.relu
-        self.conv1 = torch.nn.Conv1d(in_planes,
-                                     planes,
-                                     kernel_size=kernel_size,
-                                     dilation=dilation,
-                                     padding=padding,
-                                     bias=False)
-        self.bn1 = torch.nn.BatchNorm1d(in_planes)
-        self.conv2 = torch.nn.Conv1d(planes,
-                                     planes,
-                                     kernel_size=kernel_size,
-                                     dilation=dilation,
-                                     padding=padding,
-                                     bias=False)
-        self.bn2 = torch.nn.BatchNorm1d(planes)
-
-    def forward(self, x):
-        out = self.conv1(self.activation(self.bn1(x)))
-        out = self.conv2(self.activation(self.bn2(out)))
-        out += x
-
-        return out
-
-
 class ResNet1D(nn.Module):
     def __init__(self,
                  in_channels,
