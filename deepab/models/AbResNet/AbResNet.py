@@ -111,9 +111,7 @@ class AbResNet(nn.Module):
                        return_attn=True))
 
     def get_lstm_input(self, x):
-        device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
-        device = torch.device(device_type)
-
+        device = x.device
         seq_start, seq_end, seq_delim = torch.tensor(
             [20]).byte().to(device), torch.tensor(
                 [21]).byte().to(device), torch.tensor([22]).byte().to(device)

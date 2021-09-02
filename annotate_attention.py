@@ -66,6 +66,10 @@ def _get_args():
                         type=str,
                         default="CA",
                         help="Output branch to use attention from.")
+    parser.add_argument('--use_gpu',
+                        type=bool,
+                        default=False,
+                        action="store_true")
 
     return parser.parse_args()
 
@@ -81,7 +85,7 @@ def _cli():
     attention_branch = args.attention_branch.lower()
 
     device_type = 'cuda' if torch.cuda.is_available(
-    ) and args.try_gpu else 'cpu'
+    ) and args.use_gpu else 'cpu'
     device = torch.device(device_type)
 
     model = load_model(model_file, eval_mode=True, device=device)

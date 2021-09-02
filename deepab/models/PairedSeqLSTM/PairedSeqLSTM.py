@@ -80,8 +80,7 @@ class PairedSeqLSTM(nn.Module):
                 trg: torch.Tensor,
                 teacher_forcing_ratio: float = 0.5) -> torch.Tensor:
 
-        device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
-        device = torch.device(device_type)
+        device = src.device
 
         batch_size = src.shape[1]
         max_len = src.shape[0]
