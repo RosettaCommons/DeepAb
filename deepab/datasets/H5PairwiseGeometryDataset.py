@@ -13,25 +13,18 @@ from deepab.util.masking import MASK_VALUE
 
 
 class H5PairwiseGeometryDataset(data.Dataset):
+    """
+    Dataset containing sequence-structure pairs for training AbResNet
+    """
     def __init__(self,
                  filename,
-                 onehot_prim=True,
                  num_bins=37,
                  max_seq_len=None,
                  bin_labels=True,
                  mask_distant_orientations=True,
                  mask_fill_value=MASK_VALUE):
-        """
-        :param filename: The h5 file for the antibody data.
-        :param onehot_prim:
-            Whether or not to onehot-encode the primary structure data.
-        :param num_bins:
-            The number of bins to discretize the distance matrix into. If None,
-            then the distance matrix remains continuous.
-        """
         super(H5PairwiseGeometryDataset, self).__init__()
 
-        self.onehot_prim = onehot_prim
         self.filename = filename
         self.h5file = h5py.File(filename, 'r')
         self.num_proteins, _ = self.h5file['heavy_chain_primary'].shape
@@ -83,9 +76,8 @@ class H5PairwiseGeometryDataset(data.Dataset):
         # Get CDR loops
         h3 = self.h5file['h3_range'][index]
 
-        if self.onehot_prim:
-            heavy_prim = F.one_hot(heavy_prim.long())
-            light_prim = F.one_hot(light_prim.long())
+        heavy_prim = F.one_hot(heavy_prim.long())
+        light_prim = F.one_hot(light_prim.long())
 
         # Try to get the distance matrix from memory
         try:

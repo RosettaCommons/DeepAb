@@ -9,6 +9,17 @@ from deepab.layers import OuterConcatenation2D
 from deepab.util.tensor import pad_data_to_same_shape
 
 
+def create_output_block(out_planes2D, num_out_bins, kernel_size):
+    return nn.Sequential(
+        nn.Conv2d(out_planes2D,
+                  num_out_bins,
+                  kernel_size=kernel_size,
+                  padding=kernel_size // 2),
+        RCCAModule(in_channels=num_out_bins,
+                   kernel_size=kernel_size,
+                   return_attn=True))
+
+
 class AbResNet(nn.Module):
     """
     Predicts binned output distributions for CA-distance, CB-distance, NO-distance, 
@@ -61,54 +72,18 @@ class AbResNet(nn.Module):
         self.out_dropout = nn.Dropout2d(p=dropout_proportion)
 
         # Output convolution to reduce/expand to the number of bins
-        self.out_ca_dist = nn.Sequential(
-            nn.Conv2d(out_planes2D,
-                      num_out_bins,
-                      kernel_size=self.resnet2D.kernel_size,
-                      padding=self.resnet2D.kernel_size // 2),
-            RCCAModule(in_channels=num_out_bins,
-                       kernel_size=self.resnet2D.kernel_size,
-                       return_attn=True))
-        self.out_cb_dist = nn.Sequential(
-            nn.Conv2d(out_planes2D,
-                      num_out_bins,
-                      kernel_size=self.resnet2D.kernel_size,
-                      padding=self.resnet2D.kernel_size // 2),
-            RCCAModule(in_channels=num_out_bins,
-                       kernel_size=self.resnet2D.kernel_size,
-                       return_attn=True))
-        self.out_no_dist = nn.Sequential(
-            nn.Conv2d(out_planes2D,
-                      num_out_bins,
-                      kernel_size=self.resnet2D.kernel_size,
-                      padding=self.resnet2D.kernel_size // 2),
-            RCCAModule(in_channels=num_out_bins,
-                       kernel_size=self.resnet2D.kernel_size,
-                       return_attn=True))
-        self.out_omega = nn.Sequential(
-            nn.Conv2d(out_planes2D,
-                      num_out_bins,
-                      kernel_size=self.resnet2D.kernel_size,
-                      padding=self.resnet2D.kernel_size // 2),
-            RCCAModule(in_channels=num_out_bins,
-                       kernel_size=self.resnet2D.kernel_size,
-                       return_attn=True))
-        self.out_theta = nn.Sequential(
-            nn.Conv2d(out_planes2D,
-                      num_out_bins,
-                      kernel_size=self.resnet2D.kernel_size,
-                      padding=self.resnet2D.kernel_size // 2),
-            RCCAModule(in_channels=num_out_bins,
-                       kernel_size=self.resnet2D.kernel_size,
-                       return_attn=True))
-        self.out_phi = nn.Sequential(
-            nn.Conv2d(out_planes2D,
-                      num_out_bins,
-                      kernel_size=self.resnet2D.kernel_size,
-                      padding=self.resnet2D.kernel_size // 2),
-            RCCAModule(in_channels=num_out_bins,
-                       kernel_size=self.resnet2D.kernel_size,
-                       return_attn=True))
+        self.out_ca_dist = create_output_block(out_planes2D, num_out_bins,
+                                               self.resnet2D.kernel_size)
+        self.out_cb_dist = create_output_block(out_planes2D, num_out_bins,
+                                               self.resnet2D.kernel_size)
+        self.out_no_dist = create_output_block(out_planes2D, num_out_bins,
+                                               self.resnet2D.kernel_size)
+        self.out_omega = create_output_block(out_planes2D, num_out_bins,
+                                             self.resnet2D.kernel_size)
+        self.out_theta = create_output_block(out_planes2D, num_out_bins,
+                                             self.resnet2D.kernel_size)
+        self.out_phi = create_output_block(out_planes2D, num_out_bins,
+                                           self.resnet2D.kernel_size)
 
     def get_lstm_input(self, x):
         device = x.device

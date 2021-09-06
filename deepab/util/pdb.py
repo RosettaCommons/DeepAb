@@ -10,8 +10,7 @@ from bisect import bisect_left, bisect_right
 import torch
 import numpy as np
 
-from deepab.build_fv.mds import place_fourth_atom
-from deepab.util.geometry import get_masked_mat, calc_dist_mat, calc_dihedral, calc_planar
+from deepab.util.geometry import get_masked_mat, calc_dist_mat, calc_dihedral, calc_planar, place_fourth_atom
 from deepab.util.masking import make_square_mask, MASK_VALUE
 from deepab.util.util import get_fasta_chain_seq
 

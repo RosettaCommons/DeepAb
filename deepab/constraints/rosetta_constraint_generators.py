@@ -11,6 +11,10 @@ logit_to_energy = lambda _, y: -1 * y
 def write_histogram_file(constraint: Constraint,
                          histogram_dir: str,
                          prob_to_energy=logit_to_energy) -> str:
+    """
+    Writes geometric distribution to histogram file
+    """
+
     x_vals = [str(round(val.item(), 5)) for val in constraint.x_vals]
     y_vals = [
         str(round(val.item(), 5))
@@ -35,6 +39,9 @@ def write_histogram_file(constraint: Constraint,
 def get_ca_distance_constraint(constraint: Constraint,
                                histogram_dir: str,
                                prob_to_energy=logit_to_energy) -> str:
+    """
+    Writes CA-CA distance distribution to histogram file and returns constraint line
+    """
     assert type(constraint) == Constraint
     assert constraint.constraint_type == ConstraintType.ca_distance
 
@@ -54,6 +61,9 @@ def get_ca_distance_constraint(constraint: Constraint,
 def get_cb_distance_constraint(constraint: Constraint,
                                histogram_dir: str,
                                prob_to_energy=logit_to_energy) -> str:
+    """
+    Writes CB-CB distance distribution to histogram file and returns constraint line
+    """
     assert type(constraint) == Constraint
     assert constraint.constraint_type == ConstraintType.cb_distance
 
@@ -73,6 +83,9 @@ def get_cb_distance_constraint(constraint: Constraint,
 def get_no_distance_constraint(constraint: Constraint,
                                histogram_dir: str,
                                prob_to_energy=logit_to_energy) -> str:
+    """
+    Writes N-O distance distribution to histogram file and returns constraint line
+    """
     assert type(constraint) == Constraint
     assert constraint.constraint_type == ConstraintType.no_distance
 
@@ -92,6 +105,9 @@ def get_no_distance_constraint(constraint: Constraint,
 def get_omega_dihedral_constraint(constraint: Constraint,
                                   histogram_dir: str,
                                   prob_to_energy=logit_to_energy) -> str:
+    """
+    Writes omega dihedral distribution to histogram file and returns constraint line
+    """
     assert type(constraint) == Constraint
     assert constraint.constraint_type == ConstraintType.omega_dihedral
 
@@ -114,6 +130,9 @@ def get_omega_dihedral_constraint(constraint: Constraint,
 def get_theta_dihedral_constraint(constraint: Constraint,
                                   histogram_dir: str,
                                   prob_to_energy=logit_to_energy) -> str:
+    """
+    Writes theta dihedral distribution to histogram file and returns constraint line
+    """
     assert type(constraint) == Constraint
     assert constraint.constraint_type == ConstraintType.theta_dihedral
 
@@ -136,6 +155,9 @@ def get_theta_dihedral_constraint(constraint: Constraint,
 def get_phi_planar_constraint(constraint: Constraint,
                               histogram_dir: str,
                               prob_to_energy=logit_to_energy) -> str:
+    """
+    Writes phi planar distribution to histogram file and returns constraint line
+    """
     assert type(constraint) == Constraint
     assert constraint.constraint_type == ConstraintType.phi_planar
 
@@ -155,6 +177,7 @@ def get_phi_planar_constraint(constraint: Constraint,
     return constraint_line
 
 
+# Maps ConstraintType to appropriate generator function
 constraint_type_generator_dict = {
     ConstraintType.ca_distance: get_ca_distance_constraint,
     ConstraintType.cb_distance: get_cb_distance_constraint,

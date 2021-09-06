@@ -7,15 +7,12 @@ from deepab.util.tensor import pad_data_to_same_shape
 
 
 class H5PairedSeqDataset(data.Dataset):
-    def __init__(self, filename, onehot_prim=True):
-        """
-        :param filename: The h5 file for the antibody sequences from the OAS database.
-        :param onehot_prim:
-            Whether or not to onehot-encode the primary structure data.
-        """
+    """
+    Dataset containing paired sequence for training PairedSeqLSTM
+    """
+    def __init__(self, filename):
         super(H5PairedSeqDataset, self).__init__()
 
-        self.onehot_prim = onehot_prim
         self.filename = filename
         self.h5file = h5py.File(filename, 'r')
         self.num_proteins, _ = self.h5file['heavy_chain_primary'].shape
@@ -65,8 +62,6 @@ class H5PairedSeqDataset(data.Dataset):
 
     @staticmethod
     def merge_samples_to_minibatch(samples):
-        # sort according to length of aa sequence
-        # samples.sort(key=lambda x: len(x[2]), reverse=True)
         return H5AntibodyBatch(zip(*samples)).data()
 
 

@@ -65,3 +65,28 @@ def get_masked_mat(input_mat, mask, mask_fill_value=MASK_VALUE, device=None):
     out_mat[mask == 1] = input_mat[mask == 1]
 
     return out_mat
+
+
+def place_fourth_atom(a_coord: torch.Tensor, b_coord: torch.Tensor,
+                      c_coord: torch.Tensor, length: torch.Tensor,
+                      planar: torch.Tensor,
+                      dihedral: torch.Tensor) -> torch.Tensor:
+    """
+    Given 3 coords + a length + a planar angle + a dihedral angle, compute a fourth coord
+    """
+    bc_vec = b_coord - c_coord
+    bc_vec = bc_vec / bc_vec.norm(dim=-1, keepdim=True)
+
+    n_vec = (b_coord - a_coord).expand(bc_vec.shape).cross(bc_vec)
+    n_vec = n_vec / n_vec.norm(dim=-1, keepdim=True)
+
+    m_vec = [bc_vec, n_vec.cross(bc_vec), n_vec]
+    d_vec = [
+        length * torch.cos(planar),
+        length * torch.sin(planar) * torch.cos(dihedral),
+        -length * torch.sin(planar) * torch.sin(dihedral)
+    ]
+
+    d_coord = c_coord + sum([m * d for m, d in zip(m_vec, d_vec)])
+
+    return d_coord

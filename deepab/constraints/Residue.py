@@ -1,4 +1,7 @@
 class Residue():
+    """
+    Class storing residue identity
+    """
     def __init__(self, index: int, identity: str):
         super().__init__()
 

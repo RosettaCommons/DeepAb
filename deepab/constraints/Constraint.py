@@ -7,6 +7,9 @@ from .Residue import Residue
 
 
 class Constraint():
+    """
+    Class containing predicted geometric distribution between pair of residues
+    """
     def __init__(self,
                  constraint_type: ConstraintType,
                  residue_1: Residue,
