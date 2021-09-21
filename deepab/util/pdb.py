@@ -350,8 +350,6 @@ def write_pdb_bfactor(in_pdb_file, out_pdb_file, bfactor):
     structure = parser.get_structure("_", in_pdb_file)
 
     i = 0
-    # bfactor = bfactor / (bfactor.max() - bfactor.min())
-    # bfactor = bfactor * 1000
     for chain in structure.get_chains():
         for r in chain.get_residues():
             [a.set_bfactor(bfactor[i]) for a in r.get_atoms()]

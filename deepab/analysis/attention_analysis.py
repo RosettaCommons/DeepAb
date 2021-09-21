@@ -56,7 +56,7 @@ def get_mean_range_attn(
 
 def get_cdr_attn_dict(
     attn: torch.FloatTensor,
-    cdr_range_dict: Dict[Tuple[int]],
+    cdr_range_dict: Dict[str, Tuple[int, int]],
 ):
     """
     Calculates attention on whole sequence for each CDR loop

@@ -66,10 +66,7 @@ def _get_args():
                         type=str,
                         default="CA",
                         help="Output branch to use attention from.")
-    parser.add_argument('--use_gpu',
-                        type=bool,
-                        default=False,
-                        action="store_true")
+    parser.add_argument('--use_gpu', default=False, action="store_true")
 
     return parser.parse_args()
 
@@ -110,7 +107,7 @@ def _cli():
         f.write(fasta_content)
 
     cdr_i = cdr_indices(pdb_file, cdr_loop)
-    annotate_structure(model, temp_fasta, pdb_file, cdr_i, attention_branch)
+    annotate_structure(model, temp_fasta, out_file, cdr_i, attention_branch)
 
 
 if __name__ == '__main__':
