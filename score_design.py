@@ -119,6 +119,9 @@ def _cli():
     device = torch.device(device_type)
 
     model_files = list(glob(os.path.join(model_dir, "*.pt")))
+    if len(model_files) == 0:
+        exit("No model files found at: {}".format(model_dir))
+
     model = ModelEnsemble(model_files=model_files,
                           load_model=load_model,
                           eval_mode=True,

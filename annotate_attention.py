@@ -85,6 +85,9 @@ def _cli():
     ) and args.use_gpu else 'cpu'
     device = torch.device(device_type)
 
+    if not os.path.exists(model_file):
+        exit("No model file found at: {}".format(model_file))
+
     model = load_model(model_file, eval_mode=True, device=device)
 
     if not cdr_loop in cdr_names:
