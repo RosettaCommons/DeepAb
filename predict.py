@@ -11,6 +11,7 @@ import deepab
 from deepab.models.AbResNet import load_model
 from deepab.models.ModelEnsemble import ModelEnsemble
 from deepab.build_fv.build_cen_fa import build_initial_fv, get_cst_file, refine_fv
+from deepab.metrics.rosetta_ab import get_ab_metrics
 from deepab.util.pdb import renumber_pdb
 
 
@@ -124,6 +125,11 @@ def _get_args():
                         default=False,
                         action="store_true",
                         help="Predict for fasta with only one chain")
+    parser.add_argument(
+        "--native_pdb",
+        type=str,
+        default=None,
+        help="Native PDB in Chothia format for measuring RMSDs.")
     parser.add_argument("--use_gpu",
                         default=False,
                         action="store_true",
@@ -144,6 +150,7 @@ def _cli():
     renumber = args.renumber
     keep_constraints = args.keep_constraints
     single_chain = args.single_chain
+    native_pdb = args.native_pdb
 
     device_type = 'cuda' if torch.cuda.is_available(
     ) and args.use_gpu else 'cpu'
@@ -184,6 +191,16 @@ def _cli():
 
     if not keep_constraints:
         os.system("rm -rf {}".format(constraint_dir))
+
+    if native_pdb is not None and os.path.exists(native_pdb):
+        pose = pyrosetta.pose_from_pdb(pred_pdb)
+        native_pose = pyrosetta.pose_from_pdb(native_pdb)
+
+        metrics = get_ab_metrics(pose, native_pose)
+
+        print("Metrics")
+        for metric_name, metric_value in metrics.items():
+            print("{}{}".format(metric_name.ljust(12), round(metric_value, 3)))
 
 
 if __name__ == '__main__':
