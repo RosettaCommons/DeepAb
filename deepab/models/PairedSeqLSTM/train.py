@@ -153,7 +153,10 @@ def _get_args():
     parser.add_argument('--save_every', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=4)
     parser.add_argument('--lr', type=float, default=0.01)
-    parser.add_argument('--try_gpu', type=bool, default=True)
+    parser.add_argument('--use_gpu',
+                        type=bool,
+                        default=False,
+                        action="store_true")
     parser.add_argument('--train_split', type=float, default=0.95)
 
     default_h5_file = os.path.join(project_path, 'data/abSeq.h5')
@@ -170,7 +173,7 @@ def _cli():
     """Command line interface for train.py when it is run as a script"""
     args = _get_args()
     device_type = 'cuda' if torch.cuda.is_available(
-    ) and args.try_gpu else 'cpu'
+    ) and args.use_gpu else 'cpu'
     device = torch.device(device_type)
 
     properties = dict(seq_dim=23,

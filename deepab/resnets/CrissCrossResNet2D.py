@@ -1,32 +1,8 @@
-"""Criss-cross attention based on implementation from:
-https://github.com/Serge-weihao/CCNet-Pure-Pytorch
-
-MIT License
-
-Copyright (c) 2019 Serge-weihao
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.checkpoint import checkpoint
+from einops import rearrange, repeat
 
 
 class CrissCrossAttention(nn.Module):
@@ -42,61 +18,51 @@ class CrissCrossAttention(nn.Module):
                                     out_channels=in_dim,
                                     kernel_size=1)
         self.softmax = nn.Softmax(dim=3)
-        self.INF = lambda B, H, W: -torch.diag(
-            torch.tensor(float("inf")).to(self.device).repeat(H), 0).unsqueeze(
-                0).repeat(B * W, 1, 1)
         self.gamma = nn.Parameter(torch.zeros(1))
 
-        device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.device = torch.device(device_type)
-
     def forward(self, x):
-        m_batchsize, _, height, width = x.size()
-        proj_query = self.query_conv(x)
-        proj_query_H = proj_query.permute(0, 3, 1, 2).contiguous().view(
-            m_batchsize * width, -1, height).permute(0, 2, 1)
-        proj_query_W = proj_query.permute(0, 2, 1, 3).contiguous().view(
-            m_batchsize * height, -1, width).permute(0, 2, 1)
-        proj_key = self.key_conv(x)
-        proj_key_H = proj_key.permute(0, 3, 1, 2).contiguous().view(
-            m_batchsize * width, -1, height)
-        proj_key_W = proj_key.permute(0, 2, 1, 3).contiguous().view(
-            m_batchsize * height, -1, width)
-        proj_value = self.value_conv(x)
-        proj_value_H = proj_value.permute(0, 3, 1, 2).contiguous().view(
-            m_batchsize * width, -1, height)
-        proj_value_W = proj_value.permute(0, 2, 1, 3).contiguous().view(
-            m_batchsize * height, -1, width)
-        energy_H = (torch.bmm(proj_query_H, proj_key_H) +
-                    self.INF(m_batchsize, height, width)).view(
-                        m_batchsize, width, height,
-                        height).permute(0, 2, 1, 3)
-        energy_W = torch.bmm(proj_query_W,
-                             proj_key_W).view(m_batchsize, height, width,
-                                              width)
-        concate = self.softmax(torch.cat([energy_H, energy_W], 3))
+        device = x.device
+        b, _, h, w = x.shape
 
-        att_H = concate[:, :, :,
-                        0:height].permute(0, 2, 1, 3).contiguous().view(
-                            m_batchsize * width, height, height)
-        att_W = concate[:, :, :, height:height + width].contiguous().view(
-            m_batchsize * height, width, width)
-        out_H = torch.bmm(proj_value_H,
-                          att_H.permute(0, 2,
-                                        1)).view(m_batchsize, width, -1,
-                                                 height).permute(0, 2, 3, 1)
-        out_W = torch.bmm(proj_value_W,
-                          att_W.permute(0, 2,
-                                        1)).view(m_batchsize, height, -1,
-                                                 width).permute(0, 2, 1, 3)
+        q = self.query_conv(x)
+        q_h = rearrange(q, "b c h w -> (b w) h c")
+        q_w = rearrange(q, "b c h w -> (b h) w c")
+
+        k = self.key_conv(x)
+        k_h = rearrange(k, "b c h w -> (b w) c h")
+        k_w = rearrange(k, "b c h w -> (b h) c w")
+
+        v = self.value_conv(x)
+        v_h = rearrange(v, "b c h w -> (b w) c h")
+        v_w = rearrange(v, "b c h w -> (b h) c w")
+
+        inf = repeat(torch.diag(
+            torch.tensor(float("-inf"), device=device).repeat(h), 0),
+                     "h1 h2 -> (b w) h1 h2",
+                     b=b,
+                     w=w)
+        e_h = rearrange(torch.bmm(q_h, k_h) + inf,
+                        "(b w) h1 h2 -> b h1 w h2",
+                        b=b)
+        e_w = rearrange(torch.bmm(q_w, k_w), "(b h) w1 w2 -> b h w1 w2", b=b)
+
+        attn = self.softmax(torch.cat([e_h, e_w], 3))
+        attn_h, attn_w = attn.chunk(2, dim=-1)
+        attn_h = rearrange(attn_h, "b h1 w h2 -> (b w) h1 h2")
+        attn_w = rearrange(attn_w, "b h w1 w2 -> (b h) w1 w2")
+
+        out_h = torch.bmm(v_h, rearrange(attn_h, "bw h1 h2 -> bw h2 h1"))
+        out_h = rearrange(out_h, "(b w) c h -> b c h w", b=b)
+        out_w = torch.bmm(v_w, rearrange(attn_w, "bh w1 w2 -> bh w2 w1"))
+        out_w = rearrange(out_w, "(b h) c w -> b c h w", b=b)
 
         return_attn = torch.stack([
-            att_H.view(m_batchsize, width, height, height).permute(0, 3, 2, 1),
-            att_W.view(m_batchsize, height, width, width).permute(0, 3, 1, 2)
+            rearrange(attn_h, "(b w) h1 h2 -> b h2 h1 w", b=b),
+            rearrange(attn_w, "(b h) w1 w2 -> b w2 h w1", b=b)
         ],
                                   dim=1)
 
-        return self.gamma * (out_H + out_W) + x, return_attn
+        return self.gamma * (out_h + out_w) + x, return_attn
 
 
 class RCCAModule(nn.Module):

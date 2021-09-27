@@ -97,6 +97,11 @@ def _get_args():
         default=default_model_dir,
         help="Directory containing pretrained model files (in .pt format).")
 
+    parser.add_argument('--use_gpu',
+                        type=bool,
+                        default=False,
+                        action="store_true")
+
     return parser.parse_args()
 
 
@@ -110,10 +115,13 @@ def _cli():
     model_dir = args.model_dir
 
     device_type = 'cuda' if torch.cuda.is_available(
-    ) and args.try_gpu else 'cpu'
+    ) and args.use_gpu else 'cpu'
     device = torch.device(device_type)
 
     model_files = list(glob(os.path.join(model_dir, "*.pt")))
+    if len(model_files) == 0:
+        exit("No model files found at: {}".format(model_dir))
+
     model = ModelEnsemble(model_files=model_files,
                           load_model=load_model,
                           eval_mode=True,

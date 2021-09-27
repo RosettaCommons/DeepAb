@@ -10,8 +10,7 @@ from bisect import bisect_left, bisect_right
 import torch
 import numpy as np
 
-from deepab.build_fv.mds import place_fourth_atom
-from deepab.util.geometry import get_masked_mat, calc_dist_mat, calc_dihedral, calc_planar
+from deepab.util.geometry import get_masked_mat, calc_dist_mat, calc_dihedral, calc_planar, place_fourth_atom
 from deepab.util.masking import make_square_mask, MASK_VALUE
 from deepab.util.util import get_fasta_chain_seq
 
@@ -351,8 +350,6 @@ def write_pdb_bfactor(in_pdb_file, out_pdb_file, bfactor):
     structure = parser.get_structure("_", in_pdb_file)
 
     i = 0
-    # bfactor = bfactor / (bfactor.max() - bfactor.min())
-    # bfactor = bfactor * 1000
     for chain in structure.get_chains():
         for r in chain.get_residues():
             [a.set_bfactor(bfactor[i]) for a in r.get_atoms()]

@@ -6,6 +6,9 @@ from .Residue import Residue
 
 
 class ResiduePair():
+    """
+    Class containing the set of geometric distributions between two residues
+    """
     def __init__(self, residue_1: Residue, residue_2: Residue,
                  constraints: List[Constraint]):
         super().__init__()

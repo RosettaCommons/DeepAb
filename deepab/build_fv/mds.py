@@ -1,89 +1,35 @@
+import deepab
+from deepab.util.pdb import write_pdb_bfactor
 import torch
 import numpy as np
 from sklearn.manifold import MDS
 
+from deepab.util.geometry import place_fourth_atom
 from deepab.util.masking import MASK_VALUE
+from deepab.util.pdb import calc_dihedral
 from deepab.util.util import _aa_1_3_dict, get_heavy_seq_len, load_full_seq
 
 ARBITRARILY_LARGE_VALUE = 999
 
+# def calc_dihedral(a_coord: torch.Tensor, b_coord: torch.Tensor,
+#                   c_coord: torch.Tensor,
+#                   d_coord: torch.Tensor) -> torch.Tensor:
+#     """
+#     Calculate a dihedral between tensors of coords
+#     """
+#     b1 = a_coord - b_coord
+#     b2 = b_coord - c_coord
+#     b3 = c_coord - d_coord
 
-def place_fourth_atom(a_coord: torch.Tensor, b_coord: torch.Tensor,
-                      c_coord: torch.Tensor, length: torch.Tensor,
-                      planar: torch.Tensor,
-                      dihedral: torch.Tensor) -> torch.Tensor:
-    """
-    Given 3 coords + a length + a planar angle + a dihedral angle, compute a fourth coord
-    """
-    bc_vec = b_coord - c_coord
-    bc_vec = bc_vec / bc_vec.norm(dim=-1, keepdim=True)
+#     n1 = torch.cross(b1, b2)
+#     n1 = torch.div(n1, n1.norm(dim=-1, keepdim=True))
+#     n2 = torch.cross(b2, b3)
+#     n2 = torch.div(n2, n2.norm(dim=-1, keepdim=True))
+#     m1 = torch.cross(n1, torch.div(b2, b2.norm(dim=-1, keepdim=True)))
 
-    n_vec = (b_coord - a_coord).expand(bc_vec.shape).cross(bc_vec)
-    n_vec = n_vec / n_vec.norm(dim=-1, keepdim=True)
+#     dihedral = torch.atan2((m1 * n2).sum(-1), (n1 * n2).sum(-1))
 
-    m_vec = [bc_vec, n_vec.cross(bc_vec), n_vec]
-    d_vec = [
-        length * torch.cos(planar),
-        length * torch.sin(planar) * torch.cos(dihedral),
-        -length * torch.sin(planar) * torch.sin(dihedral)
-    ]
-
-    d_coord = c_coord + sum([m * d for m, d in zip(m_vec, d_vec)])
-
-    return d_coord
-
-
-def calc_dist_mat(a_coord: torch.Tensor,
-                  b_coord: torch.Tensor) -> torch.Tensor:
-    """
-    Calculate a distance matrix between tensors of coords
-    """
-    assert a_coord.shape == b_coord.shape
-    mat_shape = (len(a_coord), len(a_coord), 3)
-
-    a_coord = a_coord.unsqueeze(0).expand(mat_shape)
-    b_coord = b_coord.unsqueeze(1).expand(mat_shape)
-
-    dist_mat = (a_coord - b_coord).norm(dim=-1)
-
-    return dist_mat
-
-
-def calc_dihedral(a_coord: torch.Tensor, b_coord: torch.Tensor,
-                  c_coord: torch.Tensor,
-                  d_coord: torch.Tensor) -> torch.Tensor:
-    """
-    Calculate a dihedral between tensors of coords
-    """
-    b1 = a_coord - b_coord
-    b2 = b_coord - c_coord
-    b3 = c_coord - d_coord
-
-    n1 = torch.cross(b1, b2)
-    n1 = torch.div(n1, n1.norm(dim=-1, keepdim=True))
-    n2 = torch.cross(b2, b3)
-    n2 = torch.div(n2, n2.norm(dim=-1, keepdim=True))
-    m1 = torch.cross(n1, torch.div(b2, b2.norm(dim=-1, keepdim=True)))
-
-    dihedral = torch.atan2((m1 * n2).sum(-1), (n1 * n2).sum(-1))
-
-    return dihedral
-
-
-def calc_planar(a_coord: torch.Tensor, b_coord: torch.Tensor,
-                c_coord: torch.Tensor) -> torch.Tensor:
-    """
-    Calculate a planar angle between tensors of coords
-    """
-    v1 = a_coord - b_coord
-    v2 = c_coord - b_coord
-
-    a = (v1 * v2).sum(-1)
-    b = v1.norm(dim=-1) * v2.norm(dim=-1)
-
-    planar = torch.acos(a / b)
-
-    return planar
+#     return dihedral
 
 
 def fix_chirality(coords: torch.Tensor) -> torch.Tensor:
@@ -305,7 +251,6 @@ def generate_mds_coords(dist: torch.Tensor,
 
 def save_PDB(out_pdb: str,
              coords: torch.Tensor,
-             dist_mat: torch.Tensor,
              seq: str,
              delim: int = None) -> None:
     """
@@ -316,9 +261,6 @@ def save_PDB(out_pdb: str,
         delim = -1
 
     atoms = ['N', 'CA', 'C', 'O', 'CB']
-    error = (dist_mat.fill_diagonal_(0) - calc_dist_mat(
-        coords[:, 1], coords[:, 1]).float()).norm(dim=-1) / np.sqrt(len(seq))
-
     with open(out_pdb, "w") as f:
         k = 0
         for r, residue in enumerate(coords):
@@ -329,7 +271,7 @@ def save_PDB(out_pdb: str,
                 f.write(
                     "ATOM  %5d  %-2s  %3s %s%4d    %8.3f%8.3f%8.3f  %4.2f  %4.2f\n"
                     % (k + 1, atoms[a], AA, "H" if r <= delim else "L", r + 1,
-                       x, y, z, 1, error[r]))
+                       x, y, z, 1, 0))
                 k += 1
         f.close()
 
@@ -350,11 +292,11 @@ def build_fv_mds(fasta_file: str,
     delim = heavy_len - 1 if not single_chain else None
     seq = load_full_seq(fasta_file)
 
-    mds_coords, ca_dist_mat = generate_mds_coords(dist,
-                                                  omega,
-                                                  theta,
-                                                  phi,
-                                                  delim=delim,
-                                                  mask=mask)
+    mds_coords, _ = generate_mds_coords(dist,
+                                        omega,
+                                        theta,
+                                        phi,
+                                        delim=delim,
+                                        mask=mask)
 
-    save_PDB(out_pdb, mds_coords, ca_dist_mat, seq, delim=(heavy_len - 1))
+    save_PDB(out_pdb, mds_coords, seq, delim=(heavy_len - 1))

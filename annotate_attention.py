@@ -66,6 +66,7 @@ def _get_args():
                         type=str,
                         default="CA",
                         help="Output branch to use attention from.")
+    parser.add_argument('--use_gpu', default=False, action="store_true")
 
     return parser.parse_args()
 
@@ -81,8 +82,11 @@ def _cli():
     attention_branch = args.attention_branch.lower()
 
     device_type = 'cuda' if torch.cuda.is_available(
-    ) and args.try_gpu else 'cpu'
+    ) and args.use_gpu else 'cpu'
     device = torch.device(device_type)
+
+    if not os.path.exists(model_file):
+        exit("No model file found at: {}".format(model_file))
 
     model = load_model(model_file, eval_mode=True, device=device)
 
@@ -106,7 +110,7 @@ def _cli():
         f.write(fasta_content)
 
     cdr_i = cdr_indices(pdb_file, cdr_loop)
-    annotate_structure(model, temp_fasta, pdb_file, cdr_i, attention_branch)
+    annotate_structure(model, temp_fasta, out_file, cdr_i, attention_branch)
 
 
 if __name__ == '__main__':
