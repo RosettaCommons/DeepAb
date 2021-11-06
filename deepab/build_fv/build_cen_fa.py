@@ -12,7 +12,7 @@ from deepab.models.AbResNet import AbResNet
 from deepab.util.model_out import get_probs_from_model, bin_matrix, binned_mat_to_values
 from deepab.util.get_bins import get_dist_bins, get_dihedral_bins, get_planar_bins
 from deepab.util.util import get_heavy_seq_len
-
+from typing import Dict, List
 
 def build_initial_fv(fasta_file: str,
                      mds_pdb_file: str,
@@ -59,7 +59,6 @@ def build_initial_fv(fasta_file: str,
 
 def get_cst_file(model: torch.nn.Module,
                  fasta_file: str,
-                 constraint_dir: str,
                  device: str = None) -> str:
     """
     Generate standard constraint files for Fv builder
@@ -72,7 +71,6 @@ def get_cst_file(model: torch.nn.Module,
 
     all_cst_file = get_filtered_constraint_file(
         residue_pairs=residue_pairs,
-        constraint_dir=os.path.join(constraint_dir, "all_csm"),
         threshold=0.1,
         constraint_types=[
             ConstraintType.cb_distance, ConstraintType.ca_distance,
@@ -82,16 +80,19 @@ def get_cst_file(model: torch.nn.Module,
         prob_to_energy=logit_to_energy)
     hb_cst_file = get_filtered_constraint_file(
         residue_pairs=residue_pairs,
-        constraint_dir=os.path.join(constraint_dir, "hb_csm"),
         local=True,
         threshold=0.3,
         constraint_types=[ConstraintType.no_distance],
         constraint_filters=[hb_dist_filter],
         prob_to_energy=logit_to_energy)
 
-    os.system("cat {} >> {}".format(all_cst_file, hb_cst_file))
+    # os.system("cat {} >> {}".format(all_cst_file, hb_cst_file))
 
-    return hb_cst_file
+    # two in-memory constraint sets
+    return {
+        'all_cst_file': all_cst_file,
+        'hb_cst_file': hb_cst_file
+    }
 
 
 def get_centroid_min_mover(
@@ -175,7 +176,7 @@ def get_fa_min_mover(
 
 def refine_fv(in_pdb_file: str,
               out_pdb_file: str,
-              cst_file: str,
+              cst_files,
               verbose: bool = False) -> float:
     """
     Run constrained minimization protocol on initial pdb file and return final score
@@ -192,7 +193,20 @@ def refine_fv(in_pdb_file: str,
         "fa_standard")
     switch_cen.apply(pose)
 
-    csm = get_constraint_set_mover(cst_file)
+    # AMW TODO: could pass pose here if we must
+    #     ConstraintSetOP ConstraintIO::read_constraints(
+    # 	std::istream & data,
+    # 	ConstraintSetOP cset,
+    # 	pose::Pose const& pose,
+    # 	bool const force_pdb_info_mapping// = false
+    # ) {
+    # from io import StringIO
+    csts = pyrosetta.rosetta.core.scoring.constraints.ConstraintIO.read_constraints(
+        # StringIO('\n'.join(cst_files['hb_cst_file'])),
+        pyrosetta.rosetta.std.stringstream('\n'.join(cst_files['all_cst_file'])),
+        pyrosetta.rosetta.core.scoring.constraints.ConstraintSet(),
+        pose)
+    csm = get_constraint_set_mover(csts)
     csm.apply(pose)
 
     ############################################################################

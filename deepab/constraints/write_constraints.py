@@ -132,7 +132,6 @@ def get_constraint_residue_pairs(model: torch.nn.Module,
 
 
 def get_filtered_constraint_file(residue_pairs: List[ResiduePair],
-                                 constraint_dir: str,
                                  threshold: float = 0.1,
                                  res_range: Iterable = None,
                                  max_separation: int = math.inf,
@@ -144,8 +143,8 @@ def get_filtered_constraint_file(residue_pairs: List[ResiduePair],
                                  constraint_types: List[ConstraintType] = None,
                                  constraint_filters: List = None,
                                  prob_to_energy=logit_to_energy):
-    if not os.path.exists(constraint_dir):
-        os.mkdir(constraint_dir)
+    # if not os.path.exists(constraint_dir):
+    #     os.mkdir(constraint_dir)
 
     # Use default constraint filters if none are provided
     if constraint_filters is None:
@@ -200,10 +199,14 @@ def get_filtered_constraint_file(residue_pairs: List[ResiduePair],
 
     constraints = [c for c in constraints if c.modal_y >= threshold]
 
-    constraint_file = os.path.join(constraint_dir, "constraints.cst")
-    with open(constraint_file, "w") as f:
-        for c in constraints:
-            f.write(constraint_type_generator_dict[c.constraint_type](
-                c, prob_to_energy=prob_to_energy))
-
-    return constraint_file
+    # constraint_file = os.path.join(constraint_dir, "constraints.cst")
+    # with open(constraint_file, "w") as f:
+    #     for c in constraints:
+    #         f.write(constraint_type_generator_dict[c.constraint_type](
+    #             c, prob_to_energy=prob_to_energy))
+    
+    # now this set of functions returns an in-memory list of 
+    # text constraint defs. ordinarily i'd have it return Constraints
+    # but those are hard to create without a Pose
+    return [constraint_type_generator_dict[c.constraint_type](
+                 c, prob_to_energy=prob_to_energy) for c in constraints]
