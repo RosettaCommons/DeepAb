@@ -147,10 +147,6 @@ def get_filtered_constraint_file(residue_pairs: List[ResiduePair],
     if not os.path.exists(constraint_dir):
         os.mkdir(constraint_dir)
 
-    histogram_dir = os.path.join(constraint_dir, "histograms")
-    if not os.path.exists(histogram_dir):
-        os.mkdir(histogram_dir)
-
     # Use default constraint filters if none are provided
     if constraint_filters is None:
         constraint_filters = [
@@ -208,6 +204,6 @@ def get_filtered_constraint_file(residue_pairs: List[ResiduePair],
     with open(constraint_file, "w") as f:
         for c in constraints:
             f.write(constraint_type_generator_dict[c.constraint_type](
-                c, histogram_dir, prob_to_energy=prob_to_energy))
+                c, prob_to_energy=prob_to_energy))
 
     return constraint_file
