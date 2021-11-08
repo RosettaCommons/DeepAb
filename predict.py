@@ -22,13 +22,13 @@ def prog_print(text):
 
 
 def refine_fv_(args):
-    in_pdb_file, out_pdb_file, cst_files = args
-    return refine_fv(in_pdb_file, out_pdb_file, cst_files)
+    in_pdb_file, out_pdb_file, cst_file = args
+    return refine_fv(in_pdb_file, out_pdb_file, cst_file)
 
 
 def build_structure(model,
                     fasta_file,
-                    cst_files,
+                    cst_file,
                     out_dir,
                     target="pred",
                     num_decoys=5,
@@ -49,7 +49,7 @@ def build_structure(model,
     prog_print("Creating decoys structures")
     decoy_pdb_pattern = os.path.join(decoy_dir,
                                      "{}.deepab.{{}}.pdb".format(target))
-    refine_args = [(mds_pdb_file, decoy_pdb_pattern.format(i), cst_files)
+    refine_args = [(mds_pdb_file, decoy_pdb_pattern.format(i), cst_file)
                    for i in range(num_decoys)]
     decoy_scores = process_map(refine_fv_, refine_args, max_workers=num_procs)
 

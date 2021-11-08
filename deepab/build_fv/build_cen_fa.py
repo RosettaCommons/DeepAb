@@ -87,12 +87,10 @@ def get_cst_file(model: torch.nn.Module,
         prob_to_energy=logit_to_energy)
 
     # os.system("cat {} >> {}".format(all_cst_file, hb_cst_file))
+    hb_cst_file.extend(all_cst_file)
 
-    # two in-memory constraint sets
-    return {
-        'all_cst_file': all_cst_file,
-        'hb_cst_file': hb_cst_file
-    }
+    # one combined in-memory constraint set
+    return hb_cst_file
 
 
 def get_centroid_min_mover(
@@ -176,7 +174,7 @@ def get_fa_min_mover(
 
 def refine_fv(in_pdb_file: str,
               out_pdb_file: str,
-              cst_files,
+              cst_file,
               verbose: bool = False) -> float:
     """
     Run constrained minimization protocol on initial pdb file and return final score
@@ -203,7 +201,7 @@ def refine_fv(in_pdb_file: str,
     # from io import StringIO
     csts = pyrosetta.rosetta.core.scoring.constraints.ConstraintIO.read_constraints(
         # StringIO('\n'.join(cst_files['hb_cst_file'])),
-        pyrosetta.rosetta.std.stringstream('\n'.join(cst_files['all_cst_file'])),
+        pyrosetta.rosetta.std.stringstream('\n'.join(cst_file)),
         pyrosetta.rosetta.core.scoring.constraints.ConstraintSet(),
         pose)
     csm = get_constraint_set_mover(csts)
