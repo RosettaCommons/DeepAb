@@ -5,7 +5,7 @@ import pyrosetta
 from .mds import build_fv_mds
 from .score_functions import *
 from .utils import get_constraint_set_mover, resolve_clashes, disulfidize
-from deepab.constraints import ConstraintType, get_constraint_residue_pairs, get_filtered_constraint_file
+from deepab.constraints import ConstraintType, get_constraint_residue_pairs, get_filtered_constraint_defs
 from deepab.constraints.custom_filters import hb_dist_filter
 from deepab.constraints.rosetta_constraint_generators import logit_to_energy
 from deepab.models.AbResNet import AbResNet
@@ -13,6 +13,7 @@ from deepab.util.model_out import get_probs_from_model, bin_matrix, binned_mat_t
 from deepab.util.get_bins import get_dist_bins, get_dihedral_bins, get_planar_bins
 from deepab.util.util import get_heavy_seq_len
 from typing import Dict, List
+
 
 def build_initial_fv(fasta_file: str,
                      mds_pdb_file: str,
@@ -57,7 +58,7 @@ def build_initial_fv(fasta_file: str,
     pose.dump_pdb(mds_pdb_file)
 
 
-def get_cst_file(model: torch.nn.Module,
+def get_cst_defs(model: torch.nn.Module,
                  fasta_file: str,
                  device: str = None) -> str:
     """
@@ -69,7 +70,7 @@ def get_cst_file(model: torch.nn.Module,
                                                  use_logits=True,
                                                  device=device)
 
-    all_cst_file = get_filtered_constraint_file(
+    all_cst_defs = get_filtered_constraint_defs(
         residue_pairs=residue_pairs,
         threshold=0.1,
         constraint_types=[
@@ -78,7 +79,7 @@ def get_cst_file(model: torch.nn.Module,
             ConstraintType.phi_planar
         ],
         prob_to_energy=logit_to_energy)
-    hb_cst_file = get_filtered_constraint_file(
+    hb_cst_defs = get_filtered_constraint_defs(
         residue_pairs=residue_pairs,
         local=True,
         threshold=0.3,
@@ -87,10 +88,10 @@ def get_cst_file(model: torch.nn.Module,
         prob_to_energy=logit_to_energy)
 
     # os.system("cat {} >> {}".format(all_cst_file, hb_cst_file))
-    hb_cst_file.extend(all_cst_file)
+    hb_cst_defs.extend(all_cst_defs)
 
     # one combined in-memory constraint set
-    return hb_cst_file
+    return hb_cst_defs
 
 
 def get_centroid_min_mover(
@@ -174,7 +175,7 @@ def get_fa_min_mover(
 
 def refine_fv(in_pdb_file: str,
               out_pdb_file: str,
-              cst_file,
+              cst_defs,
               verbose: bool = False) -> float:
     """
     Run constrained minimization protocol on initial pdb file and return final score
@@ -201,7 +202,7 @@ def refine_fv(in_pdb_file: str,
     # from io import StringIO
     csts = pyrosetta.rosetta.core.scoring.constraints.ConstraintIO.read_constraints(
         # StringIO('\n'.join(cst_files['hb_cst_file'])),
-        pyrosetta.rosetta.std.stringstream('\n'.join(cst_file)),
+        pyrosetta.rosetta.std.stringstream('\n'.join(cst_defs)),
         pyrosetta.rosetta.core.scoring.constraints.ConstraintSet(),
         pose)
     csm = get_constraint_set_mover(csts)

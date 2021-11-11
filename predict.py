@@ -10,7 +10,7 @@ import pyrosetta
 import deepab
 from deepab.models.AbResNet import load_model
 from deepab.models.ModelEnsemble import ModelEnsemble
-from deepab.build_fv.build_cen_fa import build_initial_fv, get_cst_file, refine_fv
+from deepab.build_fv.build_cen_fa import build_initial_fv, get_cst_defs, refine_fv
 from deepab.metrics.rosetta_ab import get_ab_metrics
 from deepab.util.pdb import renumber_pdb
 
@@ -22,13 +22,13 @@ def prog_print(text):
 
 
 def refine_fv_(args):
-    in_pdb_file, out_pdb_file, cst_file = args
-    return refine_fv(in_pdb_file, out_pdb_file, cst_file)
+    in_pdb_file, out_pdb_file, cst_defs = args
+    return refine_fv(in_pdb_file, out_pdb_file, cst_defs)
 
 
 def build_structure(model,
                     fasta_file,
-                    cst_file,
+                    cst_defs,
                     out_dir,
                     target="pred",
                     num_decoys=5,
@@ -49,7 +49,7 @@ def build_structure(model,
     prog_print("Creating decoys structures")
     decoy_pdb_pattern = os.path.join(decoy_dir,
                                      "{}.deepab.{{}}.pdb".format(target))
-    refine_args = [(mds_pdb_file, decoy_pdb_pattern.format(i), cst_file)
+    refine_args = [(mds_pdb_file, decoy_pdb_pattern.format(i), cst_defs)
                    for i in range(num_decoys)]
     decoy_scores = process_map(refine_fv_, refine_args, max_workers=num_procs)
 
@@ -173,14 +173,12 @@ def _cli():
     # cst_file = os.path.join(constraint_dir, "hb_csm", "constraints.cst")
     # if not os.path.exists(cst_file):
     prog_print("Generating constraints")
-    cst_file = get_cst_file(model,
-                            fasta_file,
-                            device=device)
+    cst_defs = get_cst_defs(model, fasta_file, device=device)
 
     if decoys > 0:
         pred_pdb = build_structure(model,
                                    fasta_file,
-                                   cst_file,
+                                   cst_defs,
                                    pred_dir,
                                    target=target,
                                    num_decoys=decoys,
