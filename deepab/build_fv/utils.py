@@ -1,7 +1,7 @@
 import torch
 import pyrosetta
 
-from deepab.constraints import get_filtered_constraint_file
+from deepab.constraints import get_filtered_constraint_defs
 
 
 def migrate_seq_numbering(source_pose: pyrosetta.Pose,
@@ -13,15 +13,20 @@ def migrate_seq_numbering(source_pose: pyrosetta.Pose,
 
 
 def get_constraint_set_mover(
-    constraint_file: str = None,
-    **kwargs
+    csts: pyrosetta.rosetta.core.scoring.constraints.ConstraintSet  #,
+    #**kwargs
 ) -> pyrosetta.rosetta.protocols.constraint_movers.ConstraintSetMover:
-    if constraint_file == None:
-        constraint_file = get_filtered_constraint_file(**kwargs)
+
+    if csts == None:
+        print(
+            "We're now operating under logic where this shouldn't be possible")
+        quit()
+    #    constraint_file = get_filtered_constraint_defs(**kwargs)
 
     csm = pyrosetta.rosetta.protocols.constraint_movers.ConstraintSetMover()
     csm.add_constraints(True)
-    csm.constraint_file(constraint_file)
+    # AMW TODO: change this to constraint_set(constraint_set)
+    csm.constraint_set(csts)
 
     return csm
 
