@@ -28,9 +28,15 @@ Additional options for all scripts are available by running with `--help`.
 
 _Note_: This project is tested with Python 3.7.9
 
+### Input formats
+
+The files in 'data/sample_files' describe the options to format the heavy and light chains of the antibody (or antibodies) to predict the struture for:
+ * The user provides a **single FASTA file per antibody**. For each chain, this file then offers a separate entry that starts with the ID line (">"), the sequence with an arbitrary number of lines below that are then internally concatenated. The ID should not have blanks and end end with ":H" to indicate the heavy chain or ":L", respectively, for the light chain.
+ * **Multiple antibodies in single FASTA file** can be provided for bulk submissions. It is one FASTA entry with a unique name line as FASTA '>ID', followed by the sequences first of the heavy chain on the line below and then, right on the next line, the sequence of the light chain.
 
 ### Structure prediction
-Generate an antibody structure prediction from an Fv sequence with five decoys:
+
+To generate an antibody structure prediction from an Fv sequence with five decoys:
 ```
 python predict.py data/sample_files/4h0h.fasta --decoys 5 --renumber
 ```
