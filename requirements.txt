@@ -13,9 +13,9 @@ dask==2.21.0
 distributed==2.21.0
 dask-jobqueue==0.7.1
 bokeh>=0.13.0
-sklearn
+scikit-learn
 matplotlib>=3.3.3
-torch==1.7.1
+pytorch==1.7.1
 torchvision==0.8.2
 yapf
 seaborn
