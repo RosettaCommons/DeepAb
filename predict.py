@@ -115,12 +115,6 @@ def _get_args():
         action="store_true",
         help="Convert final predicted structure to Chothia format using AbNum."
     )
-    parser.add_argument(
-        "--keep_constraints",
-        default=False,
-        action="store_true",
-        help=
-        "Keep constraint files after final predicted structure is selected.")
     parser.add_argument("--single_chain",
                         default=False,
                         action="store_true",
@@ -148,7 +142,6 @@ def _cli():
     decoys = args.decoys
     num_procs = args.num_procs
     renumber = args.renumber
-    keep_constraints = args.keep_constraints
     single_chain = args.single_chain
     native_pdb = args.native_pdb
 
@@ -168,10 +161,6 @@ def _cli():
     init_string = "-mute all -check_cdr_chainbreaks false -detect_disulf true"
     pyrosetta.init(init_string)
 
-    # constraint_dir = os.path.join(pred_dir, "constraints")
-    # os.makedirs(constraint_dir, exist_ok=True)
-    # cst_file = os.path.join(constraint_dir, "hb_csm", "constraints.cst")
-    # if not os.path.exists(cst_file):
     prog_print("Generating constraints")
     cst_defs = get_cst_defs(model, fasta_file, device=device)
 
@@ -188,9 +177,6 @@ def _cli():
 
         if renumber:
             renumber_pdb(pred_pdb, pred_pdb)
-
-    # if not keep_constraints:
-    #     os.system("rm -rf {}".format(constraint_dir))
 
     if native_pdb is not None and os.path.exists(native_pdb):
         pose = pyrosetta.pose_from_pdb(pred_pdb)

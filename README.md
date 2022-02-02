@@ -1,5 +1,5 @@
 # _DeepAb_
-Official repository for [DeepAb](https://www.biorxiv.org/content/10.1101/2021.05.27.445982v1.full): Antibody structure prediction using interpretable deep learning.  The code, data, and weights for this work are made available under the [Rosetta-DL license](LICENSE.md) as part of the [Rosetta-DL](https://github.com/RosettaCommons/Rosetta-DL) bundle.
+Official repository for [DeepAb](https://www.sciencedirect.com/science/article/pii/S2666389921002804): Antibody structure prediction using interpretable deep learning.  The code, data, and weights for this work are made available under the [Rosetta-DL license](LICENSE.md) as part of the [Rosetta-DL](https://github.com/RosettaCommons/Rosetta-DL) bundle.
 
 ## Setup
 
@@ -34,10 +34,6 @@ Generate an antibody structure prediction from an Fv sequence with five decoys:
 ```
 python predict.py data/sample_files/4h0h.fasta --decoys 5 --renumber
 ```
-Generate Rosetta constraint files for an Fv sequence:
-```
-python predict.py data/sample_files/4h0h.fasta --decoys 0 --keep_constraints
-```
 Generate a structure for a single heavy or light chain:
 ```
 python predict.py data/sample_files/4h0h.fasta --decoys 5 --single_chain
@@ -46,7 +42,7 @@ _Note_: The fasta file should contain a single entry labeled "H" (even if the se
 
 **Expected output**
 
-After the script completes, the final prediction will be saved as `pred.deepab.pdb`.  The numbered decoy structures will be stored in the `decoys/` directory.  If `--keep_constraints` is specified, Rosetta constraint files and histograms will be stored in the `constraints/` directory.
+After the script completes, the final prediction will be saved as `pred.deepab.pdb`.  The numbered decoy structures will be stored in the `decoys/` directory.
 
 
 ### Attention annotation
@@ -71,4 +67,4 @@ python score_design.py data/sample_files/wt.fasta data/sample_files/h_mut_seqs.f
 After the script completes, the designs and scores will be written to a CSV file with each row containing the design ID, heavy chain sequence, light chain sequence, and  ΔCCE value.
 
 ## References
-[1] JA Ruffolo, J Sulam, and JJ Gray. "[Antibody structure prediction using interpretable deep learning.](https://www.biorxiv.org/content/10.1101/2021.05.27.445982v1.full)" _bioRxiv_ (2021).
+[1] JA Ruffolo, J Sulam, and JJ Gray. "[Antibody structure prediction using interpretable deep learning.](https://www.sciencedirect.com/science/article/pii/S2666389921002804)" _Patterns_ (2021).
