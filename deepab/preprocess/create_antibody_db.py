@@ -490,8 +490,8 @@ def _cli():
                         default=99,
                         help='Max sequence identity (%)')
     parser.add_argument('--paired',
-                        type=bool,
                         default=True,
+                        action="store_true",
                         help='Paired VH/VL only?')
     parser.add_argument(
         '--nr_complex',

@@ -254,7 +254,7 @@ def cli():
                         help='The directory containing fastas files where an '
                         'antibody with a PDB id of ID is named: ID.fasta')
     parser.add_argument('--overwrite',
-                        type=bool,
+                        action="store_true",
                         help='Whether or not to overwrite a file or not,'
                         ' if it exists',
                         default=True)

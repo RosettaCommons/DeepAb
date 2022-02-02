@@ -97,10 +97,7 @@ def _get_args():
         default=default_model_dir,
         help="Directory containing pretrained model files (in .pt format).")
 
-    parser.add_argument('--use_gpu',
-                        type=bool,
-                        default=False,
-                        action="store_true")
+    parser.add_argument('--use_gpu', default=False, action="store_true")
 
     return parser.parse_args()
 
