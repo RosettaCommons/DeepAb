@@ -1,0 +1,5 @@
+*.pyc
+benchmark.mac.ini
+benchmark.linux.ini
+benchmark.ubuntu.ini
+results
