@@ -5,7 +5,7 @@ import torch.utils.data as data
 import torch.nn.functional as F
 from tqdm import tqdm
 
-from deepab.build_fv.mds import get_full_dist_mat, differentiable_MDS, fix_chirality
+from deepab.build_fv.mds import get_full_dist_mat, fix_chirality
 from deepab.util.tensor import pad_data_to_same_shape
 from deepab.util.get_bins import get_dist_bins, get_dihedral_bins, get_planar_bins
 from deepab.util.preprocess import bin_value_matrix
@@ -20,7 +20,6 @@ class H5PairwiseGeometryDataset(data.Dataset):
                  filename,
                  num_bins=37,
                  max_seq_len=None,
-                 bin_labels=True,
                  mask_distant_orientations=True,
                  mask_fill_value=MASK_VALUE):
         super(H5PairwiseGeometryDataset, self).__init__()
@@ -32,14 +31,12 @@ class H5PairwiseGeometryDataset(data.Dataset):
         self.num_bins = num_bins
         masked_bin_num = 1 if mask_distant_orientations else 0
         self.bins = [
-            get_dist_bins(num_bins) if bin_labels else None,
-            get_dist_bins(num_bins) if bin_labels else None,
-            get_dist_bins(num_bins) if bin_labels else None,
-            get_dihedral_bins(num_bins -
-                              masked_bin_num) if bin_labels else None,
-            get_dihedral_bins(num_bins -
-                              masked_bin_num) if bin_labels else None,
-            get_planar_bins(num_bins - masked_bin_num) if bin_labels else None
+            get_dist_bins(num_bins),
+            get_dist_bins(num_bins),
+            get_dist_bins(num_bins),
+            get_dihedral_bins(num_bins - masked_bin_num),
+            get_dihedral_bins(num_bins - masked_bin_num),
+            get_planar_bins(num_bins - masked_bin_num)
         ]
 
         # Filter out sequences beyond the max length
@@ -49,7 +46,6 @@ class H5PairwiseGeometryDataset(data.Dataset):
             self.valid_indices = self.get_valid_indices()
             self.num_proteins = len(self.valid_indices)
 
-        self.bin_labels = bin_labels
         self.mask_distant_orientations = mask_distant_orientations
         self.mask_fill_value = mask_fill_value
 
@@ -91,30 +87,16 @@ class H5PairwiseGeometryDataset(data.Dataset):
 
         # Bin output matrices for classification or leave real values for regression
         nan_mat = torch.isnan(pairwise_geometry_mat)
-        if self.bin_labels:
-            pairwise_geometry_mat = torch.stack([
-                bin_value_matrix(mat, b)
-                for mat, b in zip(pairwise_geometry_mat, self.bins)
-            ])
+        pairwise_geometry_mat = torch.stack([
+            bin_value_matrix(mat, b)
+            for mat, b in zip(pairwise_geometry_mat, self.bins)
+        ])
 
-            if self.mask_distant_orientations:
-                distant_pairs = pairwise_geometry_mat[0] == self.num_bins - 1
-                pairwise_geometry_mat[3:][:, distant_pairs] = self.num_bins - 1
+        if self.mask_distant_orientations:
+            distant_pairs = pairwise_geometry_mat[0] == self.num_bins - 1
+            pairwise_geometry_mat[3:][:, distant_pairs] = self.num_bins - 1
 
-            pairwise_geometry_mat[nan_mat] = self.mask_fill_value
-        else:
-            pairwise_geometry_mat[3:] = (pairwise_geometry_mat[3:] * math.pi /
-                                         180).float()
-
-            delim = heavy_seq_len - 1
-            bb_dist_mat = get_full_dist_mat(pairwise_geometry_mat[1],
-                                            pairwise_geometry_mat[3],
-                                            pairwise_geometry_mat[4],
-                                            pairwise_geometry_mat[5],
-                                            delim=delim)
-            full_coords = differentiable_MDS(bb_dist_mat)
-            full_coords = fix_chirality(full_coords)
-            pairwise_geometry_mat = full_coords
+        pairwise_geometry_mat[nan_mat] = self.mask_fill_value
 
         return id_, heavy_prim, light_prim, pairwise_geometry_mat, h3
 

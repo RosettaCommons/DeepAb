@@ -13,7 +13,7 @@ from deepab.models.AbResNet import AbResNet, load_model
 from deepab.models.PairedSeqLSTM import load_model as load_lstm_rnn
 from deepab.util.masking import MASK_VALUE
 from deepab.util.training import check_for_h5_file
-from deepab.util.util import RawTextArgumentDefaultsHelpFormatter
+# from deepab.util.util import RawTextArgumentDefaultsHelpFormatter
 from deepab.datasets.H5PairwiseGeometryDataset import H5PairwiseGeometryDataset
 from deepab.preprocess.generate_h5_pairwise_geom_file import antibody_to_h5
 
@@ -167,8 +167,7 @@ def _get_args():
     desc = ('''
         Script for training a model using a non-redundant set of bound and 
         unbound antibodies from SabDab with at most 99% sequence similarity, 
-        a resolution cutoff of 3, and with a paired VH/VL. By default, uses 
-        the model from https://doi.org/10.1101/2020.02.09.940254.\n
+        a resolution cutoff of 3, and with a paired VH/VL.
         \n
         If there is no H5 file named antibody.h5 in the deepab/data directory, 
         then the script automatically uses the PDB files in 
@@ -176,8 +175,7 @@ def _get_args():
         such directory exists, then the script downloads the set of pdbs from
         SabDab outlined above.
         ''')
-    parser = argparse.ArgumentParser(
-        description=desc, formatter_class=RawTextArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser()
     # Model architecture arguments
     parser.add_argument('--num_blocks1D',
                         type=int,

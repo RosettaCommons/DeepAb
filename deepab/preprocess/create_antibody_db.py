@@ -395,7 +395,7 @@ def download_sabdab_summary_file(summary_file_path=_DEFAULT_SUMMARY_FILE_PATH,
     print('Downloading sabdab summary to {} from: {} ...'.format(
         summary_file_path, summary_file_url))
 
-    os.makedirs(os.path.split(summary_file_path[0]), exist_ok=True)
+    os.makedirs(os.path.split(summary_file_path)[0], exist_ok=True)
     download_file(summary_file_url, summary_file_path)
 
 
@@ -513,7 +513,8 @@ def _cli():
     args = parser.parse_args()
 
     summary_file = _DEFAULT_SUMMARY_FILE_PATH if args.summary_file == None else args.summary_file
-    download_summary_file = summary_file == None
+    download_summary_file = summary_file == None or not os.path.isfile(
+        summary_file)
     download_train_dataset(download_summary_file=download_summary_file,
                            summary_file_path=summary_file,
                            seqid=args.seqid,
