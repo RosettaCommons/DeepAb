@@ -14,6 +14,8 @@ from deepab.build_fv.build_cen_fa import build_initial_fv, get_cst_defs, refine_
 from deepab.metrics.rosetta_ab import get_ab_metrics
 from deepab.util.pdb import renumber_pdb
 
+init_string = "-mute all -check_cdr_chainbreaks false -detect_disulf true"
+
 
 def prog_print(text):
     print("*" * 50)
@@ -23,6 +25,7 @@ def prog_print(text):
 
 def refine_fv_(args):
     in_pdb_file, out_pdb_file, cst_defs = args
+    pyrosetta.init(init_string)
     return refine_fv(in_pdb_file, out_pdb_file, cst_defs)
 
 
@@ -157,9 +160,6 @@ def _cli():
                           load_model=load_model,
                           eval_mode=True,
                           device=device)
-
-    init_string = "-mute all -check_cdr_chainbreaks false -detect_disulf true"
-    pyrosetta.init(init_string)
 
     prog_print("Generating constraints")
     cst_defs = get_cst_defs(model, fasta_file, device=device)

@@ -1,9 +1,7 @@
 import torch
 import torch.nn.functional as F
 import re
-import requests
 import argparse
-from os.path import splitext, basename
 from Bio import SeqIO
 
 

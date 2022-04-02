@@ -1,5 +1,3 @@
-import torch
-
 MASK_VALUE = -999
 
 

@@ -1,6 +1,4 @@
 import os
-from tqdm import tqdm
-import torch
 
 from deepab.preprocess.create_antibody_db import download_train_dataset
 

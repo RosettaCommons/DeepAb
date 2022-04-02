@@ -41,9 +41,14 @@ def renumber_pdb(old_pdb, renum_pdb):
             time.sleep(60)
 
     # if success:
-    new_pdb_data = response.text
-    with open(renum_pdb, "w") as f:
-        f.write(new_pdb_data)
+    if success:
+        new_pdb_data = response.text
+        with open(renum_pdb, "w") as f:
+            f.write(new_pdb_data)
+    else:
+        print(
+            "Failed to renumber PDB. This is likely due to a connection error or a timeout with the AbNum server."
+        )
 
 
 def pdb2fasta(pdb_file, num_chains=None):
