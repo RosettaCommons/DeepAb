@@ -42,6 +42,7 @@ def build_structure(model,
     os.makedirs(decoy_dir, exist_ok=True)
 
     prog_print("Creating MDS structure")
+    pyrosetta.init(init_string)
     mds_pdb_file = os.path.join(decoy_dir, "{}.mds.pdb".format(target))
     build_initial_fv(fasta_file,
                      mds_pdb_file,
