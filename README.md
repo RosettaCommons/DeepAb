@@ -1,6 +1,8 @@
 # _DeepAb_
 Official repository for [DeepAb](https://www.sciencedirect.com/science/article/pii/S2666389921002804): Antibody structure prediction using interpretable deep learning.  The code, data, and weights for this work are made available under the [Rosetta-DL license](LICENSE.md) as part of the [Rosetta-DL](https://github.com/RosettaCommons/Rosetta-DL) bundle.
 
+Try antibody structure prediction in [Google Colab](https://colab.research.google.com/github/RosettaCommons/DeepAb/blob/structure-prediction-notebook/notebooks/predict_structure.ipynb).
+
 ## Setup
 
 _Optional_: Create and activate a python virtual environment
