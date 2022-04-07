@@ -67,4 +67,4 @@ python score_design.py data/sample_files/wt.fasta data/sample_files/h_mut_seqs.f
 After the script completes, the designs and scores will be written to a CSV file with each row containing the design ID, heavy chain sequence, light chain sequence, and  ΔCCE value.
 
 ## References
-[1] JA Ruffolo, J Sulam, and JJ Gray. "[Antibody structure prediction using interpretable deep learning.](https://www.sciencedirect.com/science/article/pii/S2666389921002804)" _Patterns_ (2021).
+[1] JA Ruffolo, J Sulam, and JJ Gray. "[Antibody structure prediction using interpretable deep learning.](https://www.sciencedirect.com/science/article/pii/S2666389921002804)" _Patterns_ (2022).
