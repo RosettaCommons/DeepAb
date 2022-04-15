@@ -296,6 +296,7 @@ def cdr_indices(chothia_pdb_file, cdr):
     assert cdr in cdr_chothia_range_dict.keys()
 
     chothia_range = cdr_chothia_range_dict[cdr]
+    chain_ids = []
     chain_id = cdr[0].upper()
 
     parser = PDBParser()
@@ -303,6 +304,7 @@ def cdr_indices(chothia_pdb_file, cdr):
     structure = parser.get_structure(pdb_id, chothia_pdb_file)
     cdr_chain_structure = None
     for chain in structure.get_chains():
+        chain_ids.append(chain.id)
         if chain.id == chain_id:
             cdr_chain_structure = chain
             break
@@ -323,7 +325,7 @@ def cdr_indices(chothia_pdb_file, cdr):
         print('residue id len', len(residue_id_nums))
         print('seq', len(heavy_chain_seq(chothia_pdb_file)))
 
-    if chain_id == "L":
+    if chain_id == "L" and "H" in chain_ids:
         cdr_start += len(heavy_chain_seq(chothia_pdb_file))
         cdr_end += len(heavy_chain_seq(chothia_pdb_file))
 
