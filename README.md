@@ -30,6 +30,8 @@ Additional options for all scripts are available by running with `--help`.
 
 _Note_: This project is tested with Python 3.7.9
 
+_Note_: Using `--renumber` option will send your antibody to the [AbNum server](http://www.bioinf.org.uk/abs/abnum/). If working with confidential sequences you should avoid this option and use an external renumbering tool.
+
 
 ### Structure prediction
 Generate an antibody structure prediction from an Fv sequence with five decoys:
